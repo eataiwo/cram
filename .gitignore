@@ -56,6 +56,8 @@ catkin_ws/install
 *arbotix_ros
 *robot_state_publisher
 *widowx_arm
+*rosinstall*
+
 
 ####################### PyCharm #########################################
 
@@ -244,3 +246,13 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 # .idea
+/catkin_ws/src/moveit_msgs/
+/catkin_ws/src/moveit_resources/
+/catkin_ws/src/moveit/
+/catkin_ws/src/moveit_tutorials/
+/catkin_ws/src/moveit_visual_tools/
+/catkin_ws/src/panda_moveit_config/
+/catkin_ws/src/rviz_visual_tools/
+/catkin_ws/src/srdfdom/
+/catkin_ws/src/.rosinstall.bak
+/catkin_ws/src/moveit_resources/panda_description/urdf/panda.urdf
