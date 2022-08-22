@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: cram_description
+    relative_path: robots/widowx_arm.urdf.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/widowx_arm.srdf
+  CONFIG:
+    author_name: TJ Taiwo
+    author_email: t_taiwo@live.co.uk
+    generated_timestamp: 1661156586
