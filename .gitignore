@@ -256,3 +256,4 @@ fabric.properties
 /catkin_ws/src/srdfdom/
 /catkin_ws/src/.rosinstall.bak
 /catkin_ws/src/moveit_resources/panda_description/urdf/panda.urdf
+*.idea*
