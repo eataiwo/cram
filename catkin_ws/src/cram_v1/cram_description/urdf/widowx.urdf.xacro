@@ -11,14 +11,14 @@
          <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/base_link.stl"/>
+               <mesh filename="package://cram_description/meshes/base_link.stl"/>
             </geometry>
             <xacro:material_black />
 	     </visual>
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/base_link.stl"/>
+               <mesh filename="package://cram_description/meshes/base_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -31,14 +31,14 @@
          <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/shoulder_link.stl" />
+               <mesh filename="package://cram_description/meshes/shoulder_link.stl" />
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/shoulder_link.stl"/>
+               <mesh filename="package://cram_description/meshes/shoulder_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -52,14 +52,14 @@
   		<origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/biceps_link.stl" />
+               <mesh filename="package://cram_description/meshes/biceps_link.stl" />
             </geometry>
             <xacro:material_black/>
          </visual>
          <collision>
             <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/biceps_link.stl" />
+               <mesh filename="package://cram_description/meshes/biceps_link.stl" />
             </geometry>
          </collision>
          <inertial>
@@ -73,14 +73,14 @@
 		<origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
 			<!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/forearm_link.stl"/>
+               <mesh filename="package://cram_description/meshes/forearm_link.stl"/>
             </geometry>
            <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/forearm_link.stl"/>
+               <mesh filename="package://cram_description/meshes/forearm_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -91,16 +91,36 @@
       </link>
       <link name="${prefix}wrist_1_link">
          <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/wrist_1_link.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/wrist_bracket.stl"/>
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh filename="package://widowx_arm_description/meshes/wrist_1_link.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/wrist_bracket.stl"/>
+            </geometry>
+         </collision>
+         <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="1" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+         </inertial>
+      </link>
+      <link name="${prefix}hotend">
+         <visual>
+            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <geometry>
+               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/dragon_hotend.stl"/>
+            </geometry>
+            <xacro:material_red />
+         </visual>
+         <collision>
+            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <geometry>
+               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/dragon_hotend.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -143,6 +163,11 @@
          <child link="${prefix}wrist_1_link" />
          <axis xyz="0 1 0" />
          <limit lower="-1.745" upper="1.745" effort="0" velocity="8.168" />
+      </joint>
+      <joint name="${prefix}hotend" type="fixed">
+         <!--<insert_block name="origin" />-->
+         <parent link="${prefix}wrist_1_link" />
+         <child link="${prefix}hotend"/>
       </joint>
       <!--joint name="${prefix}joint_6" type="fixed">
          <origin xyz = "0 0 ${M_SCALE*43}" rpy="0 0 0" />

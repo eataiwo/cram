@@ -5,8 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /MotionPlanning1
-        - /MotionPlanning1/Planned Path1
-      Splitter Ratio: 0.5
+        - /MotionPlanning1/Planning Request1
+      Splitter Ratio: 0.39906832575798035
     Tree Height: 215
   - Class: rviz/Help
     Name: Help
@@ -50,7 +50,7 @@ Visualization Manager:
       MoveIt_Allow_Sensor_Positioning: false
       MoveIt_Planning_Attempts: 3
       MoveIt_Planning_Time: 0.1
-      MoveIt_Use_Cartesian_Path: true
+      MoveIt_Use_Cartesian_Path: false
       MoveIt_Use_Constraint_Aware_IK: true
       MoveIt_Workspace:
         Center:
@@ -60,7 +60,7 @@ Visualization Manager:
         Size:
           X: 0.5
           Y: 0.5
-          Z: 0.5
+          Z: 1
       Name: MotionPlanning
       Planned Path:
         Color Enabled: false
@@ -87,6 +87,11 @@ Visualization Manager:
             Show Trail: false
             Value: true
           forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          hotend:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -122,7 +127,7 @@ Visualization Manager:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
         Goal State Color: 250; 128; 0
-        Interactive Marker Size: 0
+        Interactive Marker Size: 0.07999999821186066
         Joint Violation Color: 255; 0; 255
         Planning Group: widowx_arm
         Query Goal State: true
@@ -163,6 +168,11 @@ Visualization Manager:
             Show Trail: false
             Value: true
           forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          hotend:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -229,7 +239,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.2855041027069092
+      Distance: 0.4076165556907654
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -237,17 +247,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.75
       Focal Point:
-        X: 0.04200604557991028
-        Y: -0.005905601661652327
-        Z: 0.29954391717910767
+        X: 0.1209549605846405
+        Y: 0.08557086437940598
+        Z: 0.12327621132135391
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -0.12520280480384827
+      Pitch: 0.6847976446151733
       Target Frame: base_footprint
-      Yaw: 4.679947376251221
+      Yaw: 1.301730990409851
     Saved: ~
 Window Geometry:
   Displays:

@@ -57,7 +57,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/base_link.stl" />
+                <mesh filename="package://cram_description/meshes/base_link.stl" />
             </geometry>
             <material name="">
                 <color rgba="0.15 0.15 0.15 1.0" />
@@ -66,7 +66,7 @@
         <collision>
             <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/base_link.stl" />
+                <mesh filename="package://cram_description/meshes/base_link.stl" />
             </geometry>
         </collision>
         <inertial>
@@ -79,7 +79,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/shoulder_link.stl" />
+                <mesh filename="package://cram_description/meshes/shoulder_link.stl" />
             </geometry>
             <material name="">
                 <color rgba="0.15 0.15 0.15 1.0" />
@@ -88,7 +88,7 @@
         <collision>
             <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/shoulder_link.stl" />
+                <mesh filename="package://cram_description/meshes/shoulder_link.stl" />
             </geometry>
         </collision>
         <inertial>
@@ -102,7 +102,7 @@
             <origin rpy="0 0 0" xyz="0.04825 0 0.14" />
             <!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/biceps_link.stl" />
+                <mesh filename="package://cram_description/meshes/biceps_link.stl" />
             </geometry>
             <material name="">
                 <color rgba="0.15 0.15 0.15 1.0" />
@@ -111,7 +111,7 @@
         <collision>
             <origin rpy="0 0 0" xyz="0.04825 0 0.14" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/biceps_link.stl" />
+                <mesh filename="package://cram_description/meshes/biceps_link.stl" />
             </geometry>
         </collision>
         <inertial>
@@ -125,7 +125,7 @@
             <origin rpy="0 0 0" xyz="0 0 0.14203000000000002" />
             <!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/forearm_link.stl" />
+                <mesh filename="package://cram_description/meshes/forearm_link.stl" />
             </geometry>
             <material name="">
                 <color rgba="0.15 0.15 0.15 1.0" />
@@ -134,7 +134,7 @@
         <collision>
             <origin rpy="0 0 0" xyz="0 0 0.14203000000000002" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/forearm_link.stl" />
+                <mesh filename="package://cram_description/meshes/forearm_link.stl" />
             </geometry>
         </collision>
         <inertial>
@@ -145,18 +145,40 @@
     </link>
     <link name="wrist_1_link">
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 0" />
+            <origin rpy="-1.5707 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/wrist_1_link.stl" />
+                <mesh filename="package://cram_description/meshes/wrist_bracket.stl" scale="0.001 0.001 0.001" />
             </geometry>
             <material name="">
                 <color rgba="0.15 0.15 0.15 1.0" />
             </material>
         </visual>
         <collision>
-            <origin rpy="0 0 0" xyz="0 0 0" />
+            <origin rpy="-1.5707 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="package://widowx_arm_description/meshes/wrist_1_link.stl" />
+                <mesh filename="package://cram_description/meshes/wrist_bracket.stl" scale="0.001 0.001 0.001" />
+            </geometry>
+        </collision>
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <mass value="1" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </link>
+    <link name="hotend">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0.037" />
+            <geometry>
+                <mesh filename="package://cram_description/meshes/dragon_hotend.stl" scale="0.001 0.001 0.001" />
+            </geometry>
+            <material name="">
+                <color rgba="0.34 0.35 0.36 1.0" />
+            </material>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0.037" />
+            <geometry>
+                <mesh filename="package://cram_description/meshes/dragon_hotend.stl" scale="0.001 0.001 0.001" />
             </geometry>
         </collision>
         <inertial>
@@ -176,7 +198,7 @@
         <parent link="arm_base_link" />
         <child link="shoulder_link" />
         <axis xyz="0 0 1" />
-        <limit effort="0" lower="-2.617" upper="2.617" velocity="0.785" />
+        <limit effort="0" lower="-2.617" upper="2.617" velocity="7.016" />
     </joint>
     <joint name="joint_2" type="revolute">
         <!--origin xyz="0.04825 0 0.14203" rpy="0 0 0" /-->
@@ -184,21 +206,26 @@
         <parent link="shoulder_link" />
         <child link="biceps_link" />
         <axis xyz="0 1 0" />
-        <limit effort="0" lower="-1.571" upper="1.571" velocity="1.571" />
+        <limit effort="0" lower="-1.571" upper="1.571" velocity="5.760" />
     </joint>
     <joint name="joint_3" type="revolute">
         <origin rpy="0 1.570795 0" xyz="0.04825 0 0.14203000000000002" />
         <parent link="biceps_link" />
         <child link="forearm_link" />
         <axis xyz="0 1 0" />
-        <limit effort="0" lower="-1.571" upper="1.571" velocity="1.571" />
+        <limit effort="0" lower="-1.571" upper="1.571" velocity="5.760" />
     </joint>
     <joint name="joint_4" type="revolute">
         <origin rpy="0 0 0" xyz="0 0 0.14203000000000002" />
         <parent link="forearm_link" />
         <child link="wrist_1_link" />
         <axis xyz="0 1 0" />
-        <limit effort="0" lower="-1.745" upper="1.745" velocity="1.571" />
+        <limit effort="0" lower="-1.745" upper="1.745" velocity="8.168" />
+    </joint>
+    <joint name="hotend" type="fixed">
+        <!--<insert_block name="origin" />-->
+        <parent link="wrist_1_link" />
+        <child link="hotend" />
     </joint>
     <!--joint name="${prefix}joint_6" type="fixed">
          <origin xyz = "0 0 ${M_SCALE*43}" rpy="0 0 0" />
