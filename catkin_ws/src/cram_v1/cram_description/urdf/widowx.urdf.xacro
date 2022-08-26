@@ -3,7 +3,7 @@
    <xacro:property name="M_SCALE" value="0.001"/>
    <xacro:property name="M_PI" value="3.14159"/>
    
-   <xacro:include filename="$(find widowx_arm_description)/urdf/common_materials.xacro" />
+   <xacro:include filename="$(find cram_description)/urdf/common_materials.xacro" />
 
    <xacro:macro name="widowx_arm" params="parent prefix *origin">
       <!-- links -->
@@ -120,7 +120,7 @@
          <parent link="${prefix}arm_base_link" />
          <child link="${prefix}shoulder_link" />
          <axis xyz="0 0 1" />
-         <limit lower="-2.617" upper="2.617" effort="0" velocity="0.785" />
+         <limit lower="-2.617" upper="2.617" effort="0" velocity="7.016" />
       </joint>
       <joint name="${prefix}joint_2" type="revolute">
          <!--origin xyz="0.04825 0 0.14203" rpy="0 0 0" /-->
@@ -128,21 +128,21 @@
          <parent link="${prefix}shoulder_link" />
          <child link="${prefix}biceps_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.571" upper="1.571" effort="0" velocity="1.571" />
+         <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
       </joint>
       <joint name="${prefix}joint_3" type="revolute">
          <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*142.03}" rpy="0 ${M_PI/2.0} 0" />
          <parent link="${prefix}biceps_link" />
          <child link="${prefix}forearm_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.571" upper="1.571" effort="0" velocity="1.571" />
+         <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
       </joint>
       <joint name="${prefix}joint_4" type="revolute">
          <origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
          <parent link="${prefix}forearm_link" />
          <child link="${prefix}wrist_1_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.745" upper="1.745" effort="0" velocity="1.571" />
+         <limit lower="-1.745" upper="1.745" effort="0" velocity="8.168" />
       </joint>
       <!--joint name="${prefix}joint_6" type="fixed">
          <origin xyz = "0 0 ${M_SCALE*43}" rpy="0 0 0" />

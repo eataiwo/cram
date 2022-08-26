@@ -4,7 +4,7 @@
     <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager"/>
 
     <!-- load controller_list -->
-    <rosparam file="$(find widowx_moveit_config)/config/controllers.yaml"/>
-    <!--  <rosparam file="$(find widowx_moveit_config)/config/simple_moveit_controllers.yaml" /> -->
+    <rosparam file="$(find widowx_moveit)/config/controllers.yaml"/>
+    <!--  <rosparam file="$(find widowx_moveit)/config/simple_moveit_controllers.yaml" /> -->
 </launch>
 

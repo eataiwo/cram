@@ -1,0 +1,13 @@
+port: /dev/ttyUSB0
+read_rate: 600
+write_rate: 200
+joints: {
+    joint_1: {id: 1, ticks: 4096, range: 360.0, max_speed: 402, model: "MX-28"},
+    joint_2: {id: 2, ticks: 4096, range: 360.0, min_angle: -90.0, max_angle: 90.0, max_speed: 330, model: "MX-106"},
+    joint_3: {id: 3, ticks: 4096, range: 360.0, max_speed: 330, invert: true, model: "MX-106"},
+    joint_4: {id: 4, ticks: 4096, range: 360.0, min_angle: -90.0, max_angle: 90.0, max_speed: 468, invert: true, model: "MX-64"}
+}
+controllers: {
+    widowx_arm_controller: {type: follow_controller, joints: [joint_1, joint_2, joint_3, joint_4], rate: 200,
+                            index: 0, action_ns: 'follow_joint_trajectory'},
+}
