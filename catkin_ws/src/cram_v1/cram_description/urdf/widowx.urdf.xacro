@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot name="widowx_arm"  xmlns:xacro="http://ros.org/wiki/xacro">
+<!-- Based on version 0.4.1 of the franka panda xacro from github.com/frankaemika/franka_ros/franka_description and
+ widowx xacro from https://github.com/RobotnikAutomation/widowx_arm -->
+
+<robot name="widowx"  xmlns:xacro="http://ros.org/wiki/xacro">
    <xacro:property name="M_SCALE" value="0.001"/>
    <xacro:property name="M_PI" value="3.14159"/>
-   
    <xacro:include filename="$(find cram_description)/urdf/common_materials.xacro" />
 
-   <xacro:macro name="widowx_arm" params="parent prefix *origin">
+   <xacro:macro name="widowx_arm" params="arm_id:='widowx' arm_type:='widowx' connected_to:='' xyz:='0 0 0' rpy:='0 0 0' description_pkg:='cram_description' ">
+      <xacro:unless value="${not connected_to}">
+      <joint name="${arm_id}_joint_${connected_to}" type="fixed">
+        <parent link="${connected_to}"/>
+        <child link="${arm_id}_arm_base_link"/>
+        <origin rpy="${rpy}" xyz="${xyz}"/>
+      </joint>
+      </xacro:unless>
+
       <!-- links -->
-      <link name="${prefix}arm_base_link">
+      <link name="${arm_id}_arm_base_link">
          <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/base_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/${arm_type}/base_link.stl"/>
             </geometry>
             <xacro:material_black />
 	     </visual>
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/base_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/base_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -27,18 +37,18 @@
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
          </inertial>
       </link>
-      <link name="${prefix}shoulder_link">
+      <link name="${arm_id}_shoulder_link">
          <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/shoulder_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowx/shoulder_link.stl" />
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/shoulder_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/shoulder_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -47,19 +57,19 @@
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
          </inertial>
       </link>
-      <link name="${prefix}biceps_link">
+      <link name="${arm_id}_biceps_link">
          <visual>
   		<origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://cram_description/meshes/biceps_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowx/biceps_link.stl" />
             </geometry>
             <xacro:material_black/>
          </visual>
          <collision>
             <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/biceps_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowx/biceps_link.stl" />
             </geometry>
          </collision>
          <inertial>
@@ -68,19 +78,19 @@
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
          </inertial>
       </link>
-      <link name="${prefix}forearm_link">
+      <link name="${arm_id}_forearm_link">
          <visual>
 		<origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
 			<!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://cram_description/meshes/forearm_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/forearm_link.stl"/>
             </geometry>
            <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://cram_description/meshes/forearm_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/forearm_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -89,18 +99,18 @@
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
          </inertial>
       </link>
-      <link name="${prefix}wrist_1_link">
+      <link name="${arm_id}_wrist_1_link">
          <visual>
             <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/wrist_bracket.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowx/wrist_bracket.stl"/>
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/wrist_bracket.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowx/wrist_bracket.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -109,109 +119,74 @@
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
          </inertial>
       </link>
-      <link name="${prefix}hotend">
-         <visual>
-            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
-            <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/dragon_hotend.stl"/>
-            </geometry>
-            <xacro:material_red />
-         </visual>
-         <collision>
-            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
-            <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://cram_description/meshes/dragon_hotend.stl"/>
-            </geometry>
-         </collision>
-         <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <mass value="1" />
-            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
-         </inertial>
-      </link>
+
       <!-- joints -->
-      <joint name="${prefix}arm_base_joint" type="fixed">
-         <insert_block name="origin" />
-         <parent link="${parent}" />
-         <child link="${prefix}arm_base_link"/>
-      </joint>
-      <joint name="${prefix}joint_1" type="revolute">
+      <joint name="${arm_id}_joint_1" type="revolute">
          <origin xyz="0 0 ${M_SCALE*125}" rpy="0 0 0" />
-         <parent link="${prefix}arm_base_link" />
-         <child link="${prefix}shoulder_link" />
+         <parent link="${arm_id}_arm_base_link" />
+         <child link="${arm_id}_shoulder_link" />
          <axis xyz="0 0 1" />
          <limit lower="-2.617" upper="2.617" effort="0" velocity="7.016" />
       </joint>
-      <joint name="${prefix}joint_2" type="revolute">
+      <joint name="${arm_id}_joint_2" type="revolute">
          <!--origin xyz="0.04825 0 0.14203" rpy="0 0 0" /-->
          <origin xyz="0 0 0" rpy="0 0 0" />
-         <parent link="${prefix}shoulder_link" />
-         <child link="${prefix}biceps_link" />
+         <parent link="${arm_id}_shoulder_link" />
+         <child link="${arm_id}_biceps_link" />
          <axis xyz="0 1 0" />
          <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
       </joint>
-      <joint name="${prefix}joint_3" type="revolute">
+      <joint name="${arm_id}_joint_3" type="revolute">
          <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*142.03}" rpy="0 ${M_PI/2.0} 0" />
-         <parent link="${prefix}biceps_link" />
-         <child link="${prefix}forearm_link" />
+         <parent link="${arm_id}_biceps_link" />
+         <child link="${arm_id}_forearm_link" />
          <axis xyz="0 1 0" />
          <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
       </joint>
-      <joint name="${prefix}joint_4" type="revolute">
+      <joint name="${arm_id}_joint_4" type="revolute">
          <origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
-         <parent link="${prefix}forearm_link" />
-         <child link="${prefix}wrist_1_link" />
+         <parent link="${arm_id}_forearm_link" />
+         <child link="${arm_id}_wrist_1_link" />
          <axis xyz="0 1 0" />
          <limit lower="-1.745" upper="1.745" effort="0" velocity="8.168" />
       </joint>
-      <joint name="${prefix}hotend" type="fixed">
-         <!--<insert_block name="origin" />-->
-         <parent link="${prefix}wrist_1_link" />
-         <child link="${prefix}hotend"/>
-      </joint>
-      <!--joint name="${prefix}joint_6" type="fixed">
-         <origin xyz = "0 0 ${M_SCALE*43}" rpy="0 0 0" />
-         <parent link="${prefix}wrist_2_link" />
-         <child link="${prefix}gripper_rail_link" />
-         <axis xyz="0 0 1" />
-         <limit lower="-0.31" upper="0.1" effort="0" velocity="0.5" />
-      </joint-->
+
    </xacro:macro>
 
-  <transmission name="tran1">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_1"/>
-    <actuator name="motor1">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
+<!--   <transmission name="tran1">-->
+<!--    <type>transmission_interface/SimpleTransmission</type>-->
+<!--    <joint name="widowx_joint_1"/>-->
+<!--    <actuator name="motor1">-->
+<!--      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>-->
+<!--      <mechanicalReduction>1</mechanicalReduction>-->
+<!--    </actuator>-->
+<!--  </transmission>-->
 
- <transmission name="tran2">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_2"/>
-    <actuator name="motor2">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
+<!--   <transmission name="tran2">-->
+<!--    <type>transmission_interface/SimpleTransmission</type>-->
+<!--    <joint name="widowx_joint_2"/>-->
+<!--    <actuator name="motor2">-->
+<!--      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>-->
+<!--      <mechanicalReduction>1</mechanicalReduction>-->
+<!--    </actuator>-->
+<!--  </transmission>-->
 
- <transmission name="tran3">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_3"/>
-    <actuator name="motor3">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
+<!--   <transmission name="tran3">-->
+<!--    <type>transmission_interface/SimpleTransmission</type>-->
+<!--    <joint name="widowx_joint_3"/>-->
+<!--    <actuator name="motor3">-->
+<!--      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>-->
+<!--      <mechanicalReduction>1</mechanicalReduction>-->
+<!--    </actuator>-->
+<!--  </transmission>-->
 
- <transmission name="tran4">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_4"/>
-    <actuator name="motor4">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
+<!--   <transmission name="tran4">-->
+<!--    <type>transmission_interface/SimpleTransmission</type>-->
+<!--    <joint name="widowx_joint_4"/>-->
+<!--    <actuator name="motor4">-->
+<!--      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>-->
+<!--      <mechanicalReduction>1</mechanicalReduction>-->
+<!--    </actuator>-->
+<!--  </transmission>-->
 
 </robot>

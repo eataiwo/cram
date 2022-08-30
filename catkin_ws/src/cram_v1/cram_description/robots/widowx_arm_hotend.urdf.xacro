@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<!-- Based on version 0.4.1 of the franka panda xacro from github.com/frankaemika/franka_ros/franka_description and
+ widowx xacro from https://github.com/RobotnikAutomation/widowx_arm -->
+<robot name="widowx_arm" xmlns:xacro="http://ros.org/wiki/xacro">
+	<xacro:include filename="$(find cram_description )/urdf/widowx.urdf.xacro"/>
+	<xacro:include filename="$(find cram_description )/urdf/hotend.urdf.xacro"/>
+
+	<xacro:widowx_arm/>
+	<xacro:hotend ns="widowx" rpy="0 0 0" connected_to="widowx_wrist_1_link"/>
+</robot>

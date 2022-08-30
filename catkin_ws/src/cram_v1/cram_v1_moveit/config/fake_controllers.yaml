@@ -1,0 +1,53 @@
+controller_list:
+  - name: fake_widowx_1_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_1_joint_1
+      - widowx_1_joint_2
+      - widowx_1_joint_3
+      - widowx_1_joint_4
+  - name: fake_widowx_2_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_2_joint_1
+      - widowx_2_joint_2
+      - widowx_2_joint_3
+      - widowx_2_joint_4
+  - name: fake_widowx_1_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      []
+  - name: fake_widowx_2_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      []
+  - name: fake_widowx_1_arm_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_1_joint_1
+      - widowx_1_joint_2
+      - widowx_1_joint_3
+      - widowx_1_joint_4
+  - name: fake_widowx_arm_2_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_2_joint_1
+      - widowx_2_joint_2
+      - widowx_2_joint_3
+      - widowx_2_joint_4
+  - name: fake_cram_rig_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_1_joint_1
+      - widowx_1_joint_2
+      - widowx_1_joint_3
+      - widowx_1_joint_4
+      - widowx_2_joint_1
+      - widowx_2_joint_2
+      - widowx_2_joint_3
+      - widowx_2_joint_4
+initial:  # Define initial robot poses per group
+#  - group: widowx_1
+#    pose: home
+
+  []

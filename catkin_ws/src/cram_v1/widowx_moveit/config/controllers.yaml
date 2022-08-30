@@ -4,7 +4,7 @@ controller_list:
     type: FollowJointTrajectory
     default: true
     joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
+      - widowx_joint_1
+      - widowx_joint_2
+      - widowx_joint_3
+      - widowx_joint_4
