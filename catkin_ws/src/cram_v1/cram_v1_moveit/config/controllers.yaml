@@ -1,5 +1,5 @@
 controller_list:
-  - name: widowx_1_controller
+  - name: widowx1/widowx_1_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
@@ -8,7 +8,7 @@ controller_list:
       - widowx_1_joint_2
       - widowx_1_joint_3
       - widowx_1_joint_4
-  - name: widowx_2_controller
+  - name: widowx2/widowx_2_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true

@@ -34,9 +34,21 @@
   <!-- If needed, broadcast static tf for robot root -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_footprint" />
 
-  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
-    <rosparam file="$(find cram_v1_moveit)/config/cram_rig.yaml" command="load" />
+  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen" ns="widowx1">
+    <rosparam file="$(find cram_v1_moveit)/config/widowx1_arm.yaml" command="load"/>
+    <remap from="/widowx1/joint_states" to="/joint_states"/>-->
   </node>
+
+  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen" ns="widowx2">
+    <rosparam file="$(find cram_v1_moveit)/config/widowx2_arm.yaml" command="load"/>
+    <remap from="/widowx2/joint_states" to="/joint_states"/>-->
+  </node>
+
+<!--  <node pkg="moveit_ros_move_group" type="move_group" name="move_group" output="screen">-->
+<!--    <remap from="joint_states" to="widowx1/joint_states"/>-->
+<!--    <remap from="joint_states" to="widowx2/joint_states"/>-->
+<!--  </node>-->
+
 
 
 <!--  <group if="$(eval arg('moveit_controller_manager') == 'fake')">-->
@@ -76,5 +88,9 @@
   <include file="$(dirname)/default_warehouse_db.launch" if="$(arg db)">
     <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
   </include>
+
+  <rosparam command="load" file="$(find jog_launch)/config/widowx_jog.yaml"/>
+  <node name="jog_joint_node" pkg="jog_controller" type="jog_joint_node"/>
+  <node name="jog_frame_node" pkg="jog_controller" type="jog_frame_node"/>
 
 </launch>

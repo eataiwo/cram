@@ -1,0 +1,13 @@
+port: /dev/ttyUSB_WIDOWX1
+read_rate: 600
+write_rate: 200
+joints: {
+    widowx_1_joint_1: {id: 1, ticks: 4096, range: 360.0, max_speed: 402, model: "MX-28" },
+    widowx_1_joint_2: {id: 2, ticks: 4096, range: 360.0, min_angle: -90.0, max_angle: 90.0, max_speed: 330, model: "MX-106"},
+    widowx_1_joint_3: {id: 3, ticks: 4096, range: 360.0, max_speed: 330, invert: true, model: "MX-106"},
+    widowx_1_joint_4: {id: 4, ticks: 4096, range: 360.0, min_angle: -90.0, max_angle: 90.0, max_speed: 468, invert: true, model: "MX-64"}
+}
+controllers: {
+    widowx_1_controller: {type: follow_controller, joints: [widowx_1_joint_1, widowx_1_joint_2, widowx_1_joint_3, widowx_1_joint_4], rate: 200,
+                            index: 0, action_ns: 'follow_joint_trajectory'}
+}
