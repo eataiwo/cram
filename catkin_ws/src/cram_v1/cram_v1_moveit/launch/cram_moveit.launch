@@ -89,8 +89,4 @@
     <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
   </include>
 
-  <rosparam command="load" file="$(find jog_launch)/config/widowx_jog.yaml"/>
-  <node name="jog_joint_node" pkg="jog_controller" type="jog_joint_node"/>
-  <node name="jog_frame_node" pkg="jog_controller" type="jog_frame_node"/>
-
 </launch>
