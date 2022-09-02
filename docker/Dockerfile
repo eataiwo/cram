@@ -7,10 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3-catkin-tools  \
     python3-osrf-pycommon \
     python3-wstool \
-    git \
-    libqt5gui5
-
-ENV QT_DEBUG_PLUGINS=1
+    git
 
 # Setup catkin workspace
 RUN mkdir -p /catkin_ws/src
@@ -33,23 +30,15 @@ WORKDIR /catkin_ws
 RUN ["/bin/bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash"]
 
 RUN catkin config --extend /opt/ros/${ROS_DISTRO} --cmake-args -DCMAKE_BUILD_TYPE=Release  \
-    && catkin build &&
+    && catkin build
 
-RUN ["/bin/bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash", "catkin_make", "ls /"]
-
-#CMD ["roslaunch", "cram_v1_moveit", "cram_moveit.launch"]
-
-COPY ./58-widowx.rules /etc/udev/rules.d
-RUN udevadm control --reload-rules && udevadm trigger
-
+RUN ["/bin/bash", "-c", "source /opt/ros/${ROS_DISTRO}/setup.bash", "catkin_make"]
 
 # setup entrypoint
 COPY ./ros-entrypoint.sh /
 
 ENTRYPOINT ["/ros-entrypoint.sh"]
 CMD ["bash"]
-
-
 
 
 
