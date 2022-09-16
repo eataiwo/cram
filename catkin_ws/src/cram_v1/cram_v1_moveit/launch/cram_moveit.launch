@@ -31,9 +31,6 @@
   <arg name="use_gui" default="false" />
   <arg name="use_rviz" default="true" />
 
-  <!-- If needed, broadcast static tf for robot root -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_footprint" />
-
   <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen" ns="widowx1">
     <rosparam file="$(find cram_v1_moveit)/config/widowx1_arm.yaml" command="load"/>
     <remap from="/widowx1/joint_states" to="/joint_states"/>-->

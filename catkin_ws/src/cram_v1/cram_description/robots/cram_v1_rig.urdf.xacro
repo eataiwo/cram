@@ -12,50 +12,51 @@
 	<!-- box shaped table as base for the 2 robot arms -->
 	<link name="base">
 	<visual>
-	  <origin xyz="0 0 0.5" rpy="0 0 0"/>
+	  <origin xyz="0 0 0.02" rpy="0 0 0"/>
 	  <geometry>
-		<box size="1 2 1" />
+		<box size="0.31 0.935 0.04" />
 	  </geometry>
 	  <material name="White">
 		<color rgba="1.0 1.0 1.0 1.0"/>
 	  </material>
 	</visual>
 	<collision>
-	  <origin xyz="0 0 0.5" rpy="0 0 0"/>
+	  <origin xyz="0 0 0.02" rpy="0 0 0"/>
 	  <geometry>
-		<box size="1 1 1" />
+		<box size="0.31 0.935 0.04" />
 	  </geometry>
 	</collision>
 	</link>
 
 	<link name="buildplate">
 	<visual>
-	  <origin xyz="0 0 1" rpy="0 0 0"/>
+	  <origin xyz="0.15 0.15 0" rpy="0 0 0"/>
 	  <geometry>
-		<box size="0.3 0.3 0.01" />
+		<box size="0.3 0.3 0.004" />
 	  </geometry>
 	  <material name="Blue">
 		<color rgba="0.0 0.0 1.0 1.0"/>
 	  </material>
 	</visual>
 	<collision>
-	  <origin xyz="0 0 1" rpy="0 0 0"/>
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
 	  <geometry>
-		<box size="0.3 0.3 0.01" />
+		<box size="0.3 0.3 0.004" />
 	  </geometry>
 	</collision>
 	</link>
 
 	<joint name="buildplate_joint" type="fixed">
+		<origin xyz="0.15 -0.15 0.04" rpy="0 0 1.5708"/>
 		<parent link="base"/>
 		<child link="buildplate"/>
 	</joint>
 
 	<!-- widowx arm with hotend -->
-	<xacro:widowx_arm arm_id="$(arg arm_id_1)" connected_to="base"  xyz="0 -0.245 1" rpy=" 0 0 1.5708 "/> />
+	<xacro:widowx_arm arm_id="$(arg arm_id_1)" connected_to="base"  xyz="0 -0.245 0.04" rpy=" 0 0 1.5708 "/> />
 	<xacro:hotend ns="$(arg arm_id_1)" rpy="0 0 0" connected_to="$(arg arm_id_1)_wrist_1_link"/>
 
 	<!-- widowxl arm with hotend -->
-	<xacro:widowx_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0 0.245 1" rpy="0 0 -1.5708"/> />
+	<xacro:widowx_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0 0.245 0.04" rpy="0 0 -1.5708"/> />
 	<xacro:hotend ns="$(arg arm_id_2)" rpy="0 0 0" connected_to="$(arg arm_id_2)_wrist_1_link"/>
 </robot>
