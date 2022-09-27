@@ -33,14 +33,14 @@ planner_configs:
     min_valid_path_fraction: 0.5  # Accept partially valid moves above fraction. default: 0.5
   RRT:
     type: geometric::RRT
-    range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
+    range: 50.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
     goal_bias: 0.05  # When close to goal select goal, with this probability? default: 0.05
   RRTConnect:
     type: geometric::RRTConnect
-    range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
+    range: 100.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
   RRTstar:
     type: geometric::RRTstar
-    range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
+    range: 50.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
     goal_bias: 0.05  # When close to goal select goal, with this probability? default: 0.05
     delay_collision_checking: 1  # Stop collision checking as soon as C-free parent found. default 1
   TRRT:
@@ -128,7 +128,7 @@ planner_configs:
     dense_delta_fraction: 0.001  # delta fraction for interface detection. default: 0.001
     max_failures: 5000  # maximum consecutive failure limit. default: 5000
 widowx_1:
-  default_planner_config: RRTstar
+  default_planner_config: RRTConnect
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -181,7 +181,7 @@ widowx_2:
     - LazyPRMstar
     - SPARS
     - SPARStwo
-widowx_1_hotend:
+hotend_1:
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -207,7 +207,7 @@ widowx_1_hotend:
     - LazyPRMstar
     - SPARS
     - SPARStwo
-widowx_2_hotend:
+hotend_2:
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -234,6 +234,7 @@ widowx_2_hotend:
     - SPARS
     - SPARStwo
 widowx_1_arm_hotend:
+  default_planner_config: RRTstar
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -259,7 +260,8 @@ widowx_1_arm_hotend:
     - LazyPRMstar
     - SPARS
     - SPARStwo
-widowx_arm_2_hotend:
+widowx_2_arm_hotend:
+  default_planner_config: RRTstar
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -286,6 +288,7 @@ widowx_arm_2_hotend:
     - SPARS
     - SPARStwo
 cram_rig:
+  default_planner_config: RRTstar
   planner_configs:
     - AnytimePathShortening
     - SBL

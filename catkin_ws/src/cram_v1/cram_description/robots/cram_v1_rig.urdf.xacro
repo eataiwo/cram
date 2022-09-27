@@ -6,7 +6,7 @@
   	<xacro:arg name="arm_id_2" default="widowx_2" />
 
 	<xacro:include filename="$(find cram_description )/urdf/widowx.urdf.xacro"/>
-<!--	<xacro:include filename="$(find cram_description )/urdf/widowxl.urdf.xacro"/>-->
+	<xacro:include filename="$(find cram_description )/urdf/widowxl.urdf.xacro"/>
 	<xacro:include filename="$(find cram_description )/urdf/hotend.urdf.xacro"/>
 
 	<!-- box shaped table as base for the 2 robot arms -->
@@ -39,7 +39,7 @@
 	  </material>
 	</visual>
 	<collision>
-	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <origin xyz="0.15 0.15 0" rpy="0 0 0"/>
 	  <geometry>
 		<box size="0.3 0.3 0.004" />
 	  </geometry>
@@ -57,6 +57,6 @@
 	<xacro:hotend ns="$(arg arm_id_1)" rpy="0 0 0" connected_to="$(arg arm_id_1)_wrist_1_link"/>
 
 	<!-- widowxl arm with hotend -->
-	<xacro:widowx_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0 0.245 0.04" rpy="0 0 -1.5708"/> />
+	<xacro:widowxl_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0 0.245 0.04" rpy="0 0 -1.5708"/> />
 	<xacro:hotend ns="$(arg arm_id_2)" rpy="0 0 0" connected_to="$(arg arm_id_2)_wrist_1_link"/>
 </robot>

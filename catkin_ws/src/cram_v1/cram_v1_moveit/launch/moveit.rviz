@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /MotionPlanning1
         - /MotionPlanning1/Scene Robot1
         - /TF1
         - /TF1/Frames1
@@ -53,9 +52,9 @@ Visualization Manager:
       MoveIt_Allow_External_Program: false
       MoveIt_Allow_Replanning: false
       MoveIt_Allow_Sensor_Positioning: false
-      MoveIt_Planning_Attempts: 1
+      MoveIt_Planning_Attempts: 3
       MoveIt_Planning_Time: 0.5
-      MoveIt_Use_Cartesian_Path: true
+      MoveIt_Use_Cartesian_Path: false
       MoveIt_Use_Constraint_Aware_IK: false
       MoveIt_Workspace:
         Center:
@@ -169,7 +168,7 @@ Visualization Manager:
         Goal State Color: 250; 128; 0
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
-        Planning Group: widowx_arm_2_hotend
+        Planning Group: cram_rig
         Query Goal State: true
         Query Start State: false
         Show Workspace: false
@@ -301,7 +300,7 @@ Visualization Manager:
         widowx_2_wrist_1_link:
           Value: false
         world:
-          Value: true
+          Value: false
       Marker Alpha: 1
       Marker Scale: 0.75
       Name: TF
@@ -346,7 +345,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.5981855392456055
+      Distance: 1.433848261833191
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -354,17 +353,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.37640464305877686
-        Y: 0.09565308690071106
-        Z: 0.6699332594871521
+        X: -0.19755177199840546
+        Y: 0.07296419143676758
+        Z: 0.07027842849493027
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.31539836525917053
+      Pitch: 0.16039982438087463
       Target Frame: base
-      Yaw: 6.068579196929932
+      Yaw: 5.983564376831055
     Saved: ~
 Window Geometry:
   Displays:
