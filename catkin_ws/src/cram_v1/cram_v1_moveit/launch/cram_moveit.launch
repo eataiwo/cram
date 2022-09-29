@@ -3,13 +3,8 @@
   <!-- specify the planning pipeline -->
   <arg name="pipeline" default="ompl" />
 
-  <!-- By default, we do not start a database (it can be large) -->
-  <arg name="db" default="false" />
-  <!-- Allow user to specify database location -->
-  <arg name="db_path" default="$(find cram_v1_moveit)/default_warehouse_mongo_db" />
-
   <!-- By default, we are not in debug mode -->
-  <arg name="debug" default="false" />
+  <arg name="debug" default="true" />
 
   <!-- By default, we will load or override the robot_description -->
   <arg name="load_robot_description" default="true"/>
