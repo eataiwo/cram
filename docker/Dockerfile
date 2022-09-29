@@ -7,11 +7,18 @@ RUN apt-get update && apt-get install -y \
     python3-catkin-tools  \
     python3-osrf-pycommon \
     python3-wstool \
-    git
+    git \
+    swig  # Needed for trac_ik
 
 # Needed dependency for building trac-ik library from source
-RUN git clone https://github.com/stevengj/nlopt.git && RUN mkdir -p /nlopt/build && WORKDIR /nlopt/build \
-    && RUN cmake .. && RUN make && WORKDIR cd /usr/local/lib && RUN ln -s libnlopt.so libnlopt_cxx.so
+RUN git clone https://github.com/stevengj/nlopt.git
+RUN mkdir -p /nlopt/build
+WORKDIR /nlopt/build
+RUN cmake ..
+RUN make
+RUN sudo make install
+WORKDIR /usr/local/lib
+RUN ln -s libnlopt.so libnlopt_cxx.so
 
 # Setup catkin workspace
 RUN mkdir -p /catkin_ws/src
@@ -20,7 +27,7 @@ WORKDIR /catkin_ws/src
 
 # Setup moveit
 RUN wstool init .  \
-    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall  \
+    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall>
     && wstool update -t .
 
 RUN git clone -b feature_simulation "https://github.com/eataiwo/cram.git" &&  \
@@ -44,6 +51,3 @@ COPY ./ros-entrypoint.sh /
 
 ENTRYPOINT ["/ros-entrypoint.sh"]
 CMD ["bash"]
-
-
-
