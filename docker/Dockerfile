@@ -27,7 +27,7 @@ WORKDIR /catkin_ws/src
 
 # Setup moveit
 RUN wstool init .  \
-    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall>
+    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall \
     && wstool update -t .
 
 RUN git clone -b feature_simulation "https://github.com/eataiwo/cram.git" &&  \
