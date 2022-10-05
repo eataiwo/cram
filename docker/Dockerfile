@@ -20,20 +20,18 @@ RUN sudo make install
 WORKDIR /usr/local/lib
 RUN ln -s libnlopt.so libnlopt_cxx.so
 
-# Clone ros workspace
-RUN git clone -b feature_simulation "https://github.com/eataiwo/cram.git"
+# Setup catkin workspace
+RUN mkdir -p /catkin_ws/src
 
-## Setup catkin workspace
-#RUN mkdir -p /catkin_ws/src
-
-WORKDIR cram/catkin_ws/src
+WORKDIR /catkin_ws/src
 
 # Setup moveit
 RUN wstool init .  \
-    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall \
+    && wstool merge -t . https://raw.githubusercontent.com/ros-planning/moveit/master/moveit.rosinstall>
     && wstool update -t .
 
-RUN git clone -b cram_devel "https://github.com/eataiwo/arbotix_ros.git" && \
+RUN git clone -b feature_simulation "https://github.com/eataiwo/cram.git" &&  \
+    git clone -b cram_devel "https://github.com/eataiwo/arbotix_ros.git" && \
     git clone -b cram_devel  "https://github.com/eataiwo/trac_ik.git"
 
 RUN rosdep install -y --from-paths . --ignore-src --rosdistro noetic && rm -rf /var/lib/apt/lists/*
