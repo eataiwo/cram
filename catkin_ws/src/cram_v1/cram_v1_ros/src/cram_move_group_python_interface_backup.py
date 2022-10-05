@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import copy
 import rospy
@@ -17,7 +19,7 @@ from moveit_commander.conversions import pose_to_list
 ### Setup - init #######
 moveit_commander.roscpp_initialize(sys.argv)
 rospy.init_node("cram_move_group_python_interface", anonymous=True)
-rospy.set_param('/widowx_1/position_only_ik', False)
+# rospy.set_param('/widowx_1/position_only_ik', False)
 
 tf_buffer = tf2_ros.Buffer(rospy.Duration(100.0))
 tf_listener = tf2_ros.TransformListener(tf_buffer)
@@ -39,13 +41,13 @@ widowx_2 = moveit_commander.MoveGroupCommander("widowx_2")
 
 # Setting other planner parameters
 widowx_1.set_max_velocity_scaling_factor = 1
-widowx_1.set_goal_position_tolerance(0.05)
-widowx_1.set_goal_orientation_tolerance(0.05)
-widowx_1.set_goal_tolerance(0.05)
-widowx_1.set_goal_joint_tolerance(0.05)
+# widowx_1.set_goal_position_tolerance(0.1)
+# widowx_1.set_goal_orientation_tolerance(0.1)
+# widowx_1.set_goal_tolerance(0.1)
+# widowx_1.set_goal_joint_tolerance(0.1)
 widowx_1.set_num_planning_attempts(4)
-widowx_1.set_planning_time(3)
-widowx_1.set_pose_reference_frame("base")
+widowx_1.set_planning_time(0.5)
+#widowx_1.set_pose_reference_frame("base")
 # widowx_1.set_pose_reference_frame("widowx_1_arm_base_link")
 
 # widowx_1.set_planner_id("RRTConnectkConfigDefault")
@@ -125,7 +127,7 @@ widowx_1_home_pose = widowx_1.get_current_pose()
 rospy.sleep(0.2)
 
 # Go to print vertical home
-# Planning to a Pose Goal ######### Make function eventaully
+# Planning to a Pose Goal ######### Make function eventually
 widowx_1.set_named_target("print_home_vertical")
 widowx_1.go(wait=True)
 widowx_1.stop()
@@ -158,9 +160,9 @@ print("=====================================================")
 print("\n")
 
 pose_goal = geometry_msgs.msg.PoseStamped()
-# transform = tf_buffer.lookup_transform('base', 'base', rospy.Time())
-pose_goal.header.stamp = rospy.Time.now()
-pose_goal = widowx_1_home_pose
+# transform = tf_buffer.lookup_transform('widowx_1_arm_base_link', 'base', rospy.Time())
+# pose_goal.header.stamp = rospy.Time.now()
+# pose_goal = widowx_1_home_pose
 # pose_goal = tf2_geometry_msgs.do_transform_pose(widowx_1_print_pose, transform)
 #
 # print("\n")
@@ -171,8 +173,8 @@ pose_goal = widowx_1_home_pose
 
 
 
-pose_goal.pose.position.x = round(1e-6, 6)
-pose_goal.pose.position.y = round(1e-6, 6)
+# pose_goal.pose.position.x = round(1e-6, 6)
+# pose_goal.pose.position.y = round(1e-6, 6)
 # pose_goal.pose.position.z = round(pose_goal.pose.position.z, 6)
 # pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 6)
 # pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 6)
@@ -185,17 +187,26 @@ print(f'Raw Goal pose is:\n{pose_goal}')
 print("=====================================================")
 print("\n")
 
-transform = tf_buffer.lookup_transform('widowx_1_arm_base_link', 'base', rospy.Time(0))
+transform = tf_buffer.lookup_transform('base', 'base', rospy.Time(0))
 pose_goal = tf2_geometry_msgs.do_transform_pose(pose_goal, transform)
-pose_goal.header.stamp = rospy.Time.now()
+# pose_goal.header.stamp = rospy.Time.now()
 
-pose_goal.pose.position.x = round(pose_goal.pose.position.x, 6)
-pose_goal.pose.position.y = round(pose_goal.pose.position.y, 6)
-pose_goal.pose.position.z = round(pose_goal.pose.position.z, 6)
-pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 6)
-pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 6)
-pose_goal.pose.orientation.z = round(pose_goal.pose.orientation.z, 6)
-pose_goal.pose.orientation.w = round(pose_goal.pose.orientation.w, 6)
+pose_goal.header.stamp = rospy.Time.now()
+pose_goal.pose.orientation.x = 0.000001000
+pose_goal.pose.orientation.y = 0.707106800
+pose_goal.pose.orientation.z = 0.000001000
+pose_goal.pose.orientation.w = 0.707106800
+pose_goal.pose.position.x = 0.25000111 - 0.245
+pose_goal.pose.position.y = 0.00000111
+pose_goal.pose.position.z = 0.25000111 + 0.04
+
+pose_goal.pose.position.x = round(pose_goal.pose.position.x, 8)
+pose_goal.pose.position.y = round(pose_goal.pose.position.y, 8)
+pose_goal.pose.position.z = round(pose_goal.pose.position.z, 8)
+pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 8)
+pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 8)
+pose_goal.pose.orientation.z = round(pose_goal.pose.orientation.z, 8)
+pose_goal.pose.orientation.w = round(pose_goal.pose.orientation.w, 8)
 
 # ## Rotating just the base
 # q = [pose_goal.pose.orientation.x, pose_goal.pose.orientation.y, pose_goal.pose.orientation.z, pose_goal.pose.orientation.w]
@@ -219,7 +230,7 @@ print(f'Rounded TF Goal pose is:\n{pose_goal}')
 print("=====================================================")
 print("\n")
 
-widowx_1.set_pose_target(pose_goal, end_effector_link="widowx_1_wrist_1_link")
+widowx_1.set_pose_target(pose_goal)
 
 
 

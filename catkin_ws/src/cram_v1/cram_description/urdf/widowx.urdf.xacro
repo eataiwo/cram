@@ -134,7 +134,7 @@
          <parent link="${arm_id}_shoulder_link" />
          <child link="${arm_id}_biceps_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
+         <limit lower="-1.60" upper="1.60" effort="0" velocity="5.760" />
       </joint>
       <joint name="${arm_id}_joint_3" type="revolute">
          <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*142.03}" rpy="0 ${M_PI/2.0} 0" />
@@ -148,7 +148,7 @@
          <parent link="${arm_id}_forearm_link" />
          <child link="${arm_id}_wrist_1_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.745" upper="1.745" effort="0" velocity="8.168" />
+         <limit lower="-1.60" upper="1.60" effort="0" velocity="8.168" />
       </joint>
 
    </xacro:macro>

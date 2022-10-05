@@ -1,9 +1,11 @@
 import sys
 import copy
 import rospy
-import moveit_commander
+import math
 import moveit_msgs.msg
 import geometry_msgs.msg
+from geometry_msgs.msg import Pose, Point
+from pilz_robot_programming import *
 
 import tf2_ros
 import tf2_geometry_msgs
@@ -11,8 +13,24 @@ import tf
 from tf import transformations as ts
 
 from math import pi, tau, dist, fabs, cos
-from std_msgs.msg import String
-from moveit_commander.conversions import pose_to_list
+
+__REQUIRED_API_VERSION__ = "1"  # API version
+__ROBOT_VELOCITY__ = 0.5        # velocity of the robot
+
+# main program
+def start_program():
+    print(r.get_current_pose()) # print the current position of thr robot in the terminal
+
+
+if __name__ == "__main__":
+    # init a rosnode
+    rospy.init_node('robot_program_node')
+
+    # initialisation
+    r = Robot(__REQUIRED_API_VERSION__)  # instance of the robot
+
+    # start the main program
+    start_program()
 
 ### Setup - init #######
 moveit_commander.roscpp_initialize(sys.argv)
