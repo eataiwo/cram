@@ -115,7 +115,7 @@ if [ -n "${CONTAINER_NAME:-}" ] ; then
       NAME_OPTION="--name=$CONTAINER_NAME"
       if [ "$(count_positional_args $@)" == "0" ] ; then
          # If no further (positional) arguments were provided, start a bash in the default image (for dummy users)
-         DUMMY_DEFAULTS="-it moveit/moveit:master-source bash"
+         DUMMY_DEFAULTS="-it eataiwo/cram:v1_latest bash"
       fi
    else
       if [ -z "$($DOCKER_EXECUTABLE ps -q --filter name=^$CONTAINER_NAME\$)" ] ; then

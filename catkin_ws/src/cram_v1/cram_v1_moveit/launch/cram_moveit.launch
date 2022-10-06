@@ -24,20 +24,26 @@
 
   <!--  If simulation tag is true set controller to fake-->
   <arg name="moveit_controller_manager" default="fake" if="$(arg sim)" />
-
+  <param name="moveit_controller_manager" value="moveit_fake_controller_manager/MoveItFakeControllerManager" if="$(arg sim)"/>
 
   <!-- Set execution mode for fake execution controllers -->
-  <arg name="fake_execution_type" default="interpolate" />
+  <arg name="fake_execution_type" default="interpolate"/>
+  <param name="fake_execution_type" value="interpolate" if="$(arg sim)"  />
+
+  <!-- If needed, broadcast static tf for robot root -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base" if="$(arg sim)" />
 
   <!-- By default, hide joint_state_publisher's GUI in 'fake' controller_manager mode -->
   <arg name="use_gui" default="false" />
   <arg name="use_rviz" default="true" />
-  <!--  If simulation tag is true do not use rviz-->
-  <param name="use_rviz" value="false" if="$(arg sim)"/>
+
+<!--  &lt;!&ndash;  If simulation tag is true do not use rviz&ndash;&gt;-->
+<!--  <param name="use_rviz" value="false" if="$(arg sim)"/>-->
 
 
   <!-- load controller_list -->
-  <rosparam file="$(find cram_v1_moveit)/config/controllers.yaml" ns="move_group"/>
+  <rosparam file="$(find cram_v1_moveit)/config/controllers.yaml" ns="move_group" unless="$(arg sim)"/>
+  <rosparam file="$(find cram_v1_moveit)/config/fake_controllers.yaml" ns="move_group" if="$(arg sim)"/>
 
   <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen" ns="widowx1" unless="$(arg sim)">
     <rosparam file="$(find cram_v1_moveit)/config/widowx1_arm.yaml" command="load"/>
@@ -74,6 +80,7 @@
     <arg name="debug" value="$(arg debug)"/>
     <arg name="pipeline" value="$(arg pipeline)"/>
     <arg name="load_robot_description" value="$(arg load_robot_description)"/>
+    <arg name="sim" value="$(arg sim)"/>
   </include>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
