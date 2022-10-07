@@ -45,9 +45,9 @@ widowx_1.set_max_velocity_scaling_factor = 1
 # widowx_1.set_goal_orientation_tolerance(0.1)
 # widowx_1.set_goal_tolerance(0.1)
 # widowx_1.set_goal_joint_tolerance(0.1)
-widowx_1.set_num_planning_attempts(4)
-widowx_1.set_planning_time(0.5)
-#widowx_1.set_pose_reference_frame("base")
+widowx_1.set_num_planning_attempts(8)
+widowx_1.set_planning_time(2)
+# widowx_1.set_pose_reference_frame("base")
 # widowx_1.set_pose_reference_frame("widowx_1_arm_base_link")
 
 # widowx_1.set_planner_id("RRTConnectkConfigDefault")
@@ -160,8 +160,8 @@ print("=====================================================")
 print("\n")
 
 pose_goal = geometry_msgs.msg.PoseStamped()
-# transform = tf_buffer.lookup_transform('widowx_1_arm_base_link', 'base', rospy.Time())
-# pose_goal.header.stamp = rospy.Time.now()
+transform = tf_buffer.lookup_transform('widowx_1_arm_base_link', 'base', rospy.Time())
+pose_goal.header.stamp = rospy.Time.now()
 # pose_goal = widowx_1_home_pose
 # pose_goal = tf2_geometry_msgs.do_transform_pose(widowx_1_print_pose, transform)
 #
@@ -170,7 +170,6 @@ pose_goal = geometry_msgs.msg.PoseStamped()
 # print(f'TF Goal pose is:\n{pose_goal.pose}')
 # print("=====================================================")
 # print("\n")
-
 
 
 # pose_goal.pose.position.x = round(1e-6, 6)
@@ -232,7 +231,42 @@ print("\n")
 
 widowx_1.set_pose_target(pose_goal)
 
+success = False
+i = 1
+while not success:
+    # `go()` returns a boolean indicating whether the planning and execution was successful.
+    success = widowx_1.go(wait=True)
+    print(f"Attempt number {i}. The planner was successful: {success}")
+    i += 1
+    rospy.sleep(1)
 
+# Calling `stop()` ensures that there is no residual movement
+widowx_1.stop()
+widowx_1.clear_pose_targets()
+
+#####################################################
+
+pose_goal = geometry_msgs.msg.PoseStamped()
+transform = tf_buffer.lookup_transform('base', 'base', rospy.Time(0))
+pose_goal = tf2_geometry_msgs.do_transform_pose(pose_goal, transform)
+pose_goal.header.stamp = rospy.Time.now()
+pose_goal.pose.orientation.x = 0.000001000
+pose_goal.pose.orientation.y = 1.000001000
+pose_goal.pose.orientation.z = 0.000001000
+pose_goal.pose.orientation.w = 0.000001000
+pose_goal.pose.position.x = 0.20000111 - 0.245
+pose_goal.pose.position.y = 0.00000111
+pose_goal.pose.position.z = 0.20000111 + 0.04
+
+pose_goal.pose.position.x = round(pose_goal.pose.position.x, 8)
+pose_goal.pose.position.y = round(pose_goal.pose.position.y, 8)
+pose_goal.pose.position.z = round(pose_goal.pose.position.z, 8)
+pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 8)
+pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 8)
+pose_goal.pose.orientation.z = round(pose_goal.pose.orientation.z, 8)
+pose_goal.pose.orientation.w = round(pose_goal.pose.orientation.w, 8)
+
+widowx_1.set_pose_target(pose_goal)
 
 success = False
 i = 1
@@ -243,24 +277,82 @@ while not success:
     i += 1
     rospy.sleep(1)
 
+# Calling `stop()` ensures that there is no residual movement
+widowx_1.stop()
+widowx_1.clear_pose_targets()
 
+#####################################################
+
+pose_goal = geometry_msgs.msg.PoseStamped()
+transform = tf_buffer.lookup_transform('base', 'base', rospy.Time(0))
+pose_goal = tf2_geometry_msgs.do_transform_pose(pose_goal, transform)
+pose_goal.header.stamp = rospy.Time.now()
+pose_goal.pose.orientation.x = 0.000001000
+pose_goal.pose.orientation.y = 1.000001000
+pose_goal.pose.orientation.z = 0.000001000
+pose_goal.pose.orientation.w = 0.000001000
+pose_goal.pose.position.x = 0.20000111 - 0.245
+pose_goal.pose.position.y = 0.00000111
+pose_goal.pose.position.z = 0.10000111 + 0.04
+
+pose_goal.pose.position.x = round(pose_goal.pose.position.x, 8)
+pose_goal.pose.position.y = round(pose_goal.pose.position.y, 8)
+pose_goal.pose.position.z = round(pose_goal.pose.position.z, 8)
+pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 8)
+pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 8)
+pose_goal.pose.orientation.z = round(pose_goal.pose.orientation.z, 8)
+pose_goal.pose.orientation.w = round(pose_goal.pose.orientation.w, 8)
+
+widowx_1.set_pose_target(pose_goal)
+
+success = False
+i = 1
+while not success:
+    # `go()` returns a boolean indicating whether the planning and execution was successful.
+    success = widowx_1.go(wait=True)
+    print(f"Attempt number {i}. The planner was successful: {success}")
+    i += 1
+    rospy.sleep(1)
 
 # Calling `stop()` ensures that there is no residual movement
 widowx_1.stop()
 widowx_1.clear_pose_targets()
 
+#####################################################
 
+pose_goal = geometry_msgs.msg.PoseStamped()
+transform = tf_buffer.lookup_transform('base', 'base', rospy.Time(0))
+pose_goal = tf2_geometry_msgs.do_transform_pose(pose_goal, transform)
+pose_goal.header.stamp = rospy.Time.now()
+pose_goal.pose.orientation.x = 0.000001000
+pose_goal.pose.orientation.y = 1.000001000
+pose_goal.pose.orientation.z = 0.000001000
+pose_goal.pose.orientation.w = 0.000001000
+pose_goal.pose.position.x = 0.10000111 - 0.245
+pose_goal.pose.position.y = 0.00000111
+pose_goal.pose.position.z = 0.10000111 + 0.04
 
-# We can plan a motion for this group to a desired pose for the end-effector:
-#pose_goal = widowx_1_home_pose
+pose_goal.pose.position.x = round(pose_goal.pose.position.x, 8)
+pose_goal.pose.position.y = round(pose_goal.pose.position.y, 8)
+pose_goal.pose.position.z = round(pose_goal.pose.position.z, 8)
+pose_goal.pose.orientation.x = round(pose_goal.pose.orientation.x, 8)
+pose_goal.pose.orientation.y = round(pose_goal.pose.orientation.y, 8)
+pose_goal.pose.orientation.z = round(pose_goal.pose.orientation.z, 8)
+pose_goal.pose.orientation.w = round(pose_goal.pose.orientation.w, 8)
 
-# pose_goal.pose.orientation.x = 1e-6
-# pose_goal.pose.orientation.y = 1e-6
-# pose_goal.pose.orientation.z = 1e-6
-# pose_goal.pose.orientation.w = 1.000000
+widowx_1.set_pose_target(pose_goal)
 
-# pose_goal.pose.position.x = round(pose_goal.pose.position.x, 6)
-# pose_goal.pose.position.y += -0.200000
-#pose_goal.header.stamp = rospy.Time.now()
-# pose_goal.pose.position.z = round(pose_goal.pose.position.z, 6)
+success = False
+i = 1
+while not success:
+    # `go()` returns a boolean indicating whether the planning and execution was successful.
+    success = widowx_1.go(wait=True)
+    print(f"Attempt number {i}. The planner was successful: {success}")
+    i += 1
+    rospy.sleep(1)
 
+# Calling `stop()` ensures that there is no residual movement
+widowx_1.stop()
+widowx_1.clear_pose_targets()
+
+# Ideal pose reached for 3d printing in the arm vertical position

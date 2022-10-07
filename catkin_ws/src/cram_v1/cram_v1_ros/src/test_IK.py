@@ -9,7 +9,7 @@ import rospy
 
 class IK(object):
     def __init__(self, base_link, tip_link,
-                 timeout=0.05, epsilon=2.5e-4, solve_type="Distance",
+                 timeout=20, epsilon=1e-5, solve_type="Distance",
                  urdf_string=None):
         """
         Create a TRAC_IK instance and keep track of it.
