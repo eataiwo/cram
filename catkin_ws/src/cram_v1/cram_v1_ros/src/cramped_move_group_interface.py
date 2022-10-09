@@ -11,10 +11,9 @@ from tf import transformations as ts
 from math import pi, tau, dist, fabs, cos
 from geometry_msgs.msg import Pose, PoseStamped
 from std_msgs.msg import String
-from moveit_msgs.msg import RobotState
-from sensor_msgs.msg import JointState
 
 from moveit_commander.conversions import pose_to_list
+from moveit_commander.conversions import list_to_pose
 
 
 def round_pose_values(pose, sigfig=6):
@@ -32,30 +31,21 @@ def round_pose_values(pose, sigfig=6):
     return pose
 
 
-def array_to_pose(pose_array=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
-
-    pose = Pose()
-    pose.position.x = pose_array[0]
-    pose.position.y = pose_array[1]
-    pose.position.z = pose_array[2]
-    pose.orientation.x = pose_array[3]
-    pose.orientation.y = pose_array[4]
-    pose.orientation.z = pose_array[5]
-    pose.orientation.w = pose_array[6]
-    pose = round_pose_values(pose)
-    return pose
-
-
 class MoveitInterface:
     def __init__(self, group_name="widowx_1", verbose=False,
                  start_state=None):
         """
         Initialises relevant MoveIt things, sets up ROS interfaces, and go to an initial ready pose.
         """
+        self.eff_stop = 0.01
+        self.jump_threshold = 1.0
+
         # Common joint states for a 4DOF arm
         self.print_home_vertical = [0, 0.46, 1.08913, -0.05522]
         self.print_home_horizontal = [0, 0.925, 0.81301, -1.7303]
         self.home_goal = [0, -pi / 2, pi / 2, 0]
+
+        # TODO: Add poses for home positions too as attirbutes
 
         # Initialise moveit_commander and a rospy node:
         moveit_commander.roscpp_initialize(sys.argv)
@@ -146,10 +136,11 @@ class MoveitInterface:
         Execute a joint target movement
         """
         self.move_group.set_joint_value_target(joint_target)
-        self.move_group.go(wait)
+        success = self.move_group.go(wait)
 
         # Calling ``stop()`` ensures that there is no residual movement
         self.move_group.stop()
+        return success
 
     def pose_go(self, pose_target, wait=True):
         """
@@ -158,6 +149,18 @@ class MoveitInterface:
         pose_target.header.stamp = rospy.Time.now()
         pose_target.pose = round_pose_values(pose_target.pose)
         self.move_group.set_pose_target(pose_target.pose)
+        success = self.move_group.go(wait)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+        return success
+
+    def relative_pose_go(self, axis, value, wait=True):  #
+        """
+        Execute a relative pose movement. Add value to the corresponding axis
+        (0..5: X, Y, Z, R, P, Y) and set the new pose as the pose target.
+        Note: This does not take a quaternion but roll, pitch, yaw angles.
+        """
+        self.move_group.shift_pose_target(axis, value)
         success = self.move_group.go(wait)
         self.move_group.stop()
         self.move_group.clear_pose_targets()
@@ -196,7 +199,7 @@ class MoveitInterface:
         # ignoring the check for infeasible jumps in joint space, which is sufficient
         # for this tutorial.
         (plan, fraction) = self.move_group.compute_cartesian_path(
-            waypoints, 0.01, 1.0)  # waypoints to follow  # eef_step # jump_threshold
+            waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
         # Note: We are just planning, not asking move_group to actually move the robot yet:
 
@@ -205,13 +208,104 @@ class MoveitInterface:
 
         return fraction
 
-    def run_demo(self):
-        waypoints=[]
-        home_vertical_3d_printer = []
+    def go_home(self, robot_arm="widowx1"):
+        # TODO: Add a check for the orientation of the end effector to make sure it was in printing mode before doing home movement
+        home_pose = self.home_pose["widowx1"]
+        successes = []
+        wpose = self.move_group.get_current_pose().pose
+        # waypoints.append(copy.deepcopy(wpose))
 
+        # Clear the print bed or work piece by 30mm
+        wpose.position.z = wpose.position.z + 0.03
+        # waypoints.append(copy.deepcopy(wpose))
+        success = self.cartesian_go(wpose, wait=True)
+        successes.append(success)
+
+        # Go to home co-ordinates in x and y
+        wpose.position.x = home_pose.position.x
+        wpose.position.y = home_pose.position.y
+        # waypoints.append(copy.deepcopy(wpose))
+        success = self.cartesian_go(wpose, wait=True)
+        successes.append(success)
+
+        # Finally go to home co-ordinates in z
+        wpose.position.z = home_pose.position.z
+        # waypoints.append(copy.deepcopy(wpose))
+        success = self.cartesian_go(wpose, wait=True)
+        successes.append(success)
+
+        if all(successes):
+            return True
+        else:
+            return False
+
+    def run_demo(self):
+        """
+        Demo of the class functionality.
+        """
+        vertical_printing_quaternion = (0.000000, 1.000000, 0.000000, 0.000000)
+        horizontal_printing_quaternion = (0.000000, 0.7071068, 0.000000, 0.7071068)
+
+        # Change this to be the back corner of the print bed so the hot ends are far away from the user and work piece
+        vertical_printing_idle = [0.10000111 - 0.245, 0.00000111, 0.10000111 + 0.04, 0.000000, 1.000000, 0.000000,
+                                  0.000000]
+        horizontal_printing_idle = []
+
+        robot_arm_idle = (0, 0, 0, pi / 4)
+        robot_arm_home = (0, -pi / 2, pi / 2, 0)
+        waypoints = []
+
+        # Start a robot arm home position.
+        success = self.joint_go(robot_arm_home, wait=True)
+
+        # Go to vertical printing home position
+        vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
+        success = self.pose_go(vertical_printing_idle_pose)
+
+        # Do a relative pose movement
+        pose = self.move_group.get_current_pose()
+        pose.posisition.x = pose.posisition.x + 0.1
+        success = self.relative_pose_go(0, 0.1, wait=True)
+
+        # Do a series of cartesian movements
+        # Go to the middle of the print bed in XY
+        pose = list_to_pose([0.15, 0.15, 0.01, 0.000000, 1.000000, 0.000000, 0.000000])
+        trans_pose = self.transform_pose(pose, "buildplate", "base")
+        trans_pose = round_pose_values(trans_pose)
+        success = self.cartesian_go(trans_pose)
+
+        # Go to the edge of the print bed in Y
+        pose.position.y = 0.3
+        trans_pose = self.transform_pose(pose, "buildplate", "base")
+        trans_pose = round_pose_values(trans_pose)
+        success = self.cartesian_go(trans_pose)
+
+        # Do zig zags accross the whole printbed between x=0 and x=l/2 where l is the length of the printbed in x
+        x_spacing = 0.15
+        y_spacing = 0.06
+        build_plate_width = 0.3
+        n = (build_plate_width/y_spacing) + 1
+        for i in range(n):
+            pose.position.x = pose.position.x - x_spacing
+            trans_pose = self.transform_pose(pose, "buildplate", "base")
+            trans_pose = round_pose_values(trans_pose)
+            success = self.cartesian_go(trans_pose)
+
+            pose.position.y = pose.position.y
+            trans_pose = self.transform_pose(pose, "buildplate", "base")
+            trans_pose = round_pose_values(trans_pose)
+            success = self.cartesian_go(trans_pose)
+
+            x_spacing = -x_spacing
+
+        # Go home
+        success = self.go_home("widowx1")
+
+        # Return to robot arm home
+        success = self.joint_go(robot_arm_home, wait=True)
 
 
 if __name__ == "__main__":
-    cramped_interface = MoveitInterface()
-    cramped_interface.setup()
+    cramped_interface = MoveitInterface(verbose=True)
+    cramped_interface.setup(set_planning_time=3)
     cramped_interface.run_demo()
