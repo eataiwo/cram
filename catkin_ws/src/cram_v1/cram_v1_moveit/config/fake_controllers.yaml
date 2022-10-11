@@ -1,0 +1,39 @@
+rate: 10
+controller_list:
+  - name: widowx1/widowx_1_controller
+    type: $(arg fake_execution_type)
+    action_ns: follow_joint_trajectory
+    default: True
+    joints:
+      - widowx_1_joint_1
+      - widowx_1_joint_2
+      - widowx_1_joint_3
+      - widowx_1_joint_4
+  - name: widowx2/widowx_2_controller
+    type: $(arg fake_execution_type)
+    action_ns: follow_joint_trajectory
+    default: True
+    joints:
+      - widowx_2_joint_1
+      - widowx_2_joint_2
+      - widowx_2_joint_3
+      - widowx_2_joint_4
+  - name: fake_hotend_1_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_1_joint_1
+      - widowx_1_joint_2
+      - widowx_1_joint_3
+      - widowx_1_joint_4
+  - name: fake_hotend_2_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_2_joint_1
+      - widowx_2_joint_2
+      - widowx_2_joint_3
+      - widowx_2_joint_4
+initial:  # Define initial robot poses per group
+  - group: widowx_1
+    pose: home
+  - group: widowx_2
+    pose: home

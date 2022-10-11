@@ -1,0 +1,9 @@
+<launch>
+  <include file="$(find cram_v1_moveit)/launch/cram_moveit.launch"/>
+
+  <!-- Given the published joint states, publish tf for the robot links -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="world_2_base_tf_brodcaster" args="0 0 0 0 0 0 1 world base" />
+
+</launch>

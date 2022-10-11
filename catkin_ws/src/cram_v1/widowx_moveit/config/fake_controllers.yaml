@@ -1,0 +1,22 @@
+controller_list:
+  - name: fake_widowx_arm_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_joint_1
+      - widowx_joint_2
+      - widowx_joint_3
+      - widowx_joint_4
+  - name: fake_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      []
+  - name: fake_widowx_arm_hotend_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - widowx_joint_1
+      - widowx_joint_2
+      - widowx_joint_3
+      - widowx_joint_4
+initial:  # Define initial robot poses per group
+  - group: widowx_arm
+    pose: home

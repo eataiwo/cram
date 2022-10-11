@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Based on version 0.4.1 of the franka panda xacro from github.com/frankaemika/franka_ros/franka_description and
- widowx xacro from https://github.com/RobotnikAutomation/widowx_arm -->
+ widowxl xacro from https://github.com/RobotnikAutomation/widowxl_arm -->
 
-<robot name="widowx"  xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="widowxl"  xmlns:xacro="http://ros.org/wiki/xacro">
    <xacro:property name="M_SCALE" value="0.001"/>
    <xacro:property name="M_PI" value="3.14159"/>
    <xacro:include filename="$(find cram_description)/urdf/common_materials.xacro" />
 
-   <xacro:macro name="widowx_arm" params="arm_id:='widowx' arm_type:='widowx' connected_to:='' xyz:='0 0 0' rpy:='0 0 0' description_pkg:='cram_description' ">
+   <xacro:macro name="widowxl_arm" params="arm_id:='widowxl' arm_type:='widowxl' connected_to:='' xyz:='0 0 0' rpy:='0 0 0' description_pkg:='cram_description' ">
       <xacro:unless value="${not connected_to}">
       <joint name="${arm_id}_joint_${connected_to}" type="fixed">
         <parent link="${connected_to}"/>
@@ -28,7 +28,7 @@
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/base_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowxl/base_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -41,14 +41,14 @@
          <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/shoulder_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowxl/shoulder_link.stl" />
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/shoulder_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowxl/shoulder_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -62,14 +62,14 @@
   		<origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/biceps_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowxl/biceps_link.stl" />
             </geometry>
             <xacro:material_black/>
          </visual>
          <collision>
             <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*140}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/biceps_link.stl" />
+               <mesh filename="package://${description_pkg}/meshes/widowxl/biceps_link.stl" />
             </geometry>
          </collision>
          <inertial>
@@ -83,14 +83,14 @@
 		<origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
 			<!--origin xyz="0 0 0" rpy="0 0 0" /-->
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/forearm_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowxl/forearm_link.stl"/>
             </geometry>
            <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 ${M_SCALE*142.03}" rpy="0 0 0" />
             <geometry>
-               <mesh filename="package://${description_pkg}/meshes/widowx/forearm_link.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowxl/forearm_link.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -103,14 +103,14 @@
          <visual>
             <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowx/wrist_bracket.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowxl/wrist_bracket.stl"/>
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
             <origin xyz="0 0 0" rpy="-1.5707 0 0" />
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowx/wrist_bracket.stl"/>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowxl/wrist_bracket.stl"/>
             </geometry>
          </collision>
          <inertial>
@@ -134,7 +134,7 @@
          <parent link="${arm_id}_shoulder_link" />
          <child link="${arm_id}_biceps_link" />
          <axis xyz="0 1 0" />
-         <limit lower="-1.60" upper="1.60" effort="0" velocity="5.760" />
+         <limit lower="-1.571" upper="1.571" effort="0" velocity="5.760" />
       </joint>
       <joint name="${arm_id}_joint_3" type="revolute">
          <origin xyz="${M_SCALE*48.25} 0 ${M_SCALE*142.03}" rpy="0 ${M_PI/2.0} 0" />

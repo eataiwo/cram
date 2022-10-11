@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-	<xacro:include filename="$(find widowx_arm_description)/urdf/common_colours.xacro"/>
+	<xacro:include filename="$(find cram_description)/urdf/common_colours.xacro"/>
 
 	<xacro:macro name="material_yellow">
 		<material name="">
@@ -29,6 +29,12 @@
 	<xacro:macro name="material_greyish">
 		<material name="">
 			<color rgba="${color_greyish}"/>
+		</material>
+	</xacro:macro>
+
+	<xacro:macro name="material_red">
+		<material name="">
+			<color rgba="${color_red}"/>
 		</material>
 	</xacro:macro>
 

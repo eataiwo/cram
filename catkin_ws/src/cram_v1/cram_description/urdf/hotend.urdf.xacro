@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Based on version 0.4.1 of the franka panda xacro from github.com/frankaemika/franka_ros/franka_description and
+ widowx xacro from https://github.com/RobotnikAutomation/widowx_arm -->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hotend">
+  <xacro:macro name="hotend" params="connected_to:='' ns:='' rpy:='0 0 0' xyz:='0 0 0' description_pkg:='cram_description' ">
+    <xacro:unless value="${connected_to == ''}">
+      <joint name="${ns}_hotend_joint" type="fixed">
+        <parent link="${connected_to}"/>
+        <child link="${ns}_hotend"/>
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+      </joint>
+    </xacro:unless>
+    <link name="${ns}_hotend">
+         <visual>
+            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <geometry>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/hotend/dragon_hotend.stl"/>
+            </geometry>
+            <xacro:material_red />
+         </visual>
+         <collision>
+            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <geometry>
+               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/hotend/dragon_hotend.stl"/>
+            </geometry>
+         </collision>
+         <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="1" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+         </inertial>
+      </link>
+  </xacro:macro>
+</robot>
