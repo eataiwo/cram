@@ -1,8 +1,10 @@
 <launch>
   <!-- This file summarizes all settings required for trajectory execution  -->
 
+  <arg name="sim" />
   <!-- Define moveit controller manager plugin: fake, simple, or ros_control -->
-  <arg name="moveit_controller_manager" />
+  <arg name="moveit_controller_manager" default="fake" />
+  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)" />
   <arg name="fake_execution_type" default="interpolate" />
 
   <!-- Flag indicating whether MoveIt is allowed to load/unload  or switch controllers -->
@@ -18,6 +20,6 @@
 
   <!-- We use pass_all_args=true here to pass fake_execution_type, which is required by fake controllers, but not by real-robot controllers.
        As real-robot controller_manager.launch files shouldn't be required to define this argument, we use the trick of passing all args. -->
-  <include file="$(find cram_v1_moveit)/launch/widowx_arm_moveit_controller_manager.launch.xml" pass_all_args="true" />
-
+  <include file="$(find cram_v1_moveit)/launch/widowx_arm_moveit_controller_manager.launch.xml" pass_all_args="true" unless="$(arg sim)" />
+  <include file="$(find cram_v1_moveit)/launch/fake_moveit_controller_manager.launch.xml" if="$(arg sim)"/>
 </launch>

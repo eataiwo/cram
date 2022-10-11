@@ -258,4 +258,5 @@ fabric.properties
 /catkin_ws/src/moveit_resources/panda_description/urdf/panda.urdf
 /catkin_ws/src/geometric_shapes/
 /catkin_ws/src/jog_control/
+/catkin_ws/src/trac_ik/
 *.idea*
