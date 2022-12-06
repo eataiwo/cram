@@ -29,43 +29,6 @@ def round_pose_values(pose, sigfig=6):
     pose.orientation.w = round(pose.orientation.w, sigfig)
 
     return pose
-
-
-class MoveitInterface:
-    def __init__(self, group_name="widowx_1", verbose=False,
-                 start_state=None):
-        """
-        Initialises relevant MoveIt things, sets up ROS interfaces, and go to an initial ready pose.
-        """
-        self.eff_stop = 0.01
-        self.jump_threshold = 1.0
-
-        # Common joint states for a 4DOF arm
-        self.print_home_vertical = [0, 0.46, 1.08913, -0.05522]
-        self.print_home_horizontal = [0, 0.925, 0.81301, -1.7303]
-        self.home_goal = [0, -pi / 2, pi / 2, 0]
-
-        # TODO: Add poses for home positions too as attirbutes
-
-        # Initialise moveit_commander and a rospy node:
-        moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node("move_group_interface", anonymous=False)
-
-        # Initialise a RobotCommander object. Provides information such as
-        # the robot’s kinematic model and the robot’s current joint states
-        self.robot = moveit_commander.RobotCommander()
-
-        # Initialise a PlanningSceneInterface object. This provides a remote interface
-        # for getting, setting, and updating the robot’s internal
-        # understanding of the surrounding world:
-        self.scene = moveit_commander.PlanningSceneInterface()
-
-        # Initialise a MoveGroupCommander object. This object is an interface to a
-        # planning group (group of joints).This interface can be used to plan and
-        # execute motions:
-        self.move_group = moveit_commander.MoveGroupCommander(group_name)
-
-        # Initialise a tf buffer and a transform listener.
         # This will report back transforms between different frames
         self.tf_buffer = tf2_ros.Buffer(rospy.Duration(60.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -108,7 +71,7 @@ class MoveitInterface:
             print("\n")
 
             # Get a list of all the groups in the robot:
-            group_names = self.move_group.get_group_names()
+            group_names = self.robot.get_group_names()
             print(f"=== Available Planning Groups: {group_names} ===")
             print("=====================================================")
             print("\n")
@@ -265,7 +228,7 @@ class MoveitInterface:
         # Do a relative pose movement
         pose = self.move_group.get_current_pose()
         pose.posisition.x = pose.posisition.x + 0.1
-        success = self.relative_pose_go(0, 0.1, wait=True)
+        success = self.relative_pose_go(0, 0.15, wait=True)
 
         # Do a series of cartesian movements
         # Go to the middle of the print bed in XY
@@ -284,7 +247,7 @@ class MoveitInterface:
         x_spacing = 0.15
         y_spacing = 0.06
         build_plate_width = 0.3
-        n = (build_plate_width/y_spacing) + 1
+        n = (build_plate_width / y_spacing) + 1
         for i in range(n):
             pose.position.x = pose.position.x - x_spacing
             trans_pose = self.transform_pose(pose, "buildplate", "base")

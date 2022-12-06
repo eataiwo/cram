@@ -9,7 +9,7 @@ import rospy
 
 class IK(object):
     def __init__(self, base_link, tip_link,
-                 timeout=20, epsilon=1e-5, solve_type="Distance",
+                 timeout=5, epsilon=1 / 4096, solve_type="Distance",
                  urdf_string=None):
         """
         Create a TRAC_IK instance and keep track of it.
@@ -110,16 +110,23 @@ class IK(object):
                 self.number_of_joints))
         self._ik_solver.setKDLLimits(lower_bounds, upper_bounds)
 
+    @property
+    def solve_type(self):
+        return self._solve_type
+
 
 if __name__ == "__main__":
     ik_solver = IK(base_link="widowx_1_arm_base_link", tip_link="widowx_1_wrist_1_link")
     print(ik_solver.joint_names)
     lb, ub = ik_solver.get_joint_limits()
     print(lb, ub)
-    seed = [-0.02914563496982718, -1.547786614976612, 1.5247769031583274, -0.018407769454627694]  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
+    seed = [-0.02914563496982718, -1.547786614976612, 1.5247769031583274,
+            -0.018407769454627694]  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
     sol = ik_solver.get_ik(seed, 0.15, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035)
     print("\n")
     print("=====================================================")
     print(sol)
     print("=====================================================")
     print("\n")
+
+
