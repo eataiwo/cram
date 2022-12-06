@@ -5,11 +5,13 @@
 
 from trac_ik_python.trac_ik_wrap import TRAC_IK
 import rospy
-
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from math import pi
+from moveit_commander.conversions import list_to_pose
 
 class IK(object):
     def __init__(self, base_link, tip_link,
-                 timeout=20, epsilon=1e-5, solve_type="Distance",
+                 timeout=5.0, epsilon=1e-4, solve_type="Speed",
                  urdf_string=None):
         """
         Create a TRAC_IK instance and keep track of it.
@@ -116,10 +118,27 @@ if __name__ == "__main__":
     print(ik_solver.joint_names)
     lb, ub = ik_solver.get_joint_limits()
     print(lb, ub)
-    seed = [-0.02914563496982718, -1.547786614976612, 1.5247769031583274, -0.018407769454627694]  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
-    sol = ik_solver.get_ik(seed, 0.15, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035)
+    seed = [-0.02914563496982718, -1.547786614976612, 1.5247769031583274,
+            -0.018407769454627694]  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
+
+    target_pose = list_to_pose([0.100000, 0.00000111, 0.10000111, 0.000000, 1.000000, 0.000000,
+                                0.000000])
+
+
+    sol = ik_solver.get_ik(seed, target_pose.position.x, target_pose.position.y,
+                           target_pose.position.z, target_pose.orientation.x,
+                           target_pose.orientation.y, target_pose.orientation.z,
+                           target_pose.orientation.w)
+
+    # q = quaternion_from_euler(-pi, 0, -pi + pi/4)
+    # sol = ik_solver.get_ik(seed, 0.100000, 0.100000, 0.100000, q[0], q[1], q[2],
+    #                        q[3])
+
+    # sol = ik_solver.get_ik(seed, 0.100000, 0.00000, 0.100000, 0, 1, 0, 0)
+
     print("\n")
     print("=====================================================")
     print(sol)
     print("=====================================================")
     print("\n")
+

@@ -4,8 +4,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
+        - /MotionPlanning1/Planned Path1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 230
   - Class: rviz/Help
@@ -51,7 +53,7 @@ Visualization Manager:
       MoveIt_Allow_Replanning: false
       MoveIt_Allow_Sensor_Positioning: false
       MoveIt_Planning_Attempts: 3
-      MoveIt_Planning_Time: 0.5
+      MoveIt_Planning_Time: 1
       MoveIt_Use_Cartesian_Path: false
       MoveIt_Use_Constraint_Aware_IK: false
       MoveIt_Workspace:
@@ -149,7 +151,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
         Show Trail: false
-        State Display Time: 0.05 s
+        State Display Time: 1x
         Trail Step Size: 1
         Trajectory Topic: move_group/display_planned_path
         Use Sim Time: false
@@ -166,7 +168,7 @@ Visualization Manager:
         Goal State Color: 250; 128; 0
         Interactive Marker Size: 0.10000000149011612
         Joint Violation Color: 255; 0; 255
-        Planning Group: widowx_1
+        Planning Group: widowx_2
         Query Goal State: false
         Query Start State: false
         Show Workspace: false
@@ -274,7 +276,7 @@ Visualization Manager:
         buildplate:
           Value: true
         widowx_1_arm_base_link:
-          Value: false
+          Value: true
         widowx_1_biceps_link:
           Value: false
         widowx_1_forearm_link:
