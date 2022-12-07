@@ -114,7 +114,7 @@ print_home_vertical = [0, 0.46, 1.08913, -0.05522]
 print_home_horizontal = (0, 0.925, 0.81301, -1.7303)
 
 # Remember States
-widowx_1.remember_joint_values("print_home_vertical", print_home_vertical)
+widowx_1.remember_joint_values("print_idle_vertical", print_home_vertical)
 widowx_1.remember_joint_values("home", home_goal)
 
 widowx_2.remember_joint_values("home", home_goal)
@@ -144,7 +144,7 @@ rospy.sleep(0.2)
 
 # Go to print vertical home
 # Planning to a Pose Goal ######### Make function eventaully
-widowx_1.set_named_target("print_home_vertical")
+widowx_1.set_named_target("print_idle_vertical")
 widowx_1.go(wait=True)
 widowx_1.stop()
 widowx_1.clear_pose_targets()

@@ -4,22 +4,18 @@ import sys
 import copy
 import rospy
 import moveit_commander
-import geometry_msgs.msg
-from moveit_msgs.msg import DisplayTrajectory
+#import geometry_msgs.msg
 import tf2_ros
 import tf2_geometry_msgs
+
+from moveit_msgs.msg import DisplayTrajectory
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from math import pi, atan, tau, dist, fabs, cos, floor
 from geometry_msgs.msg import Pose, PoseStamped
-from std_msgs.msg import String
+from moveit_commander.conversions import pose_to_list, list_to_pose, list_to_pose_stamped
+# from std_msgs.msg import String
 
-from moveit_commander.conversions import pose_to_list
-from moveit_commander.conversions import list_to_pose
-from moveit_commander.conversions import list_to_pose_stamped
-
-#import test_IK
-
-
+# TODO: Add comprehensive docstring to every method and function.
 def round_pose_values(pose, sigfig=6):
     """
     Round pose values
@@ -42,28 +38,35 @@ def round_pose_values(pose, sigfig=6):
         pose.orientation.w = round(pose.orientation.w, sigfig)
 
     return pose
-
-
 class MoveitInterface:
     def __init__(self, group_name="widowx_1", verbose=False,
                  start_state=None):
         """
         Initialises relevant MoveIt things, sets up ROS interfaces, and go to an initial ready pose.
         """
-        self.eef_step = 0.0001
-        self.jump_threshold = 0.0
-        self.planning_attempts = 5
-
-        # Common joint states for a 4DOF arm
-        self.print_home_vertical = [0, 0.46, 1.08913, -0.05522]
-        self.print_home_horizontal = [0, 0.925, 0.81301, -1.7303]
-        self.home_goal = [0, -pi / 2, pi / 2, 0]
-
-        # TODO: Add poses for home positions too as attirbutes
+        # For the cartesian interpolation moveit says it needs at least 10 points inbetween waypoints therefore
+        # as the repeatability/accuracy is 1mm so that is probably the smallest movement I should really be doing
+        # at least for now (07/12/2022)
 
         # Initialise moveit_commander and a rospy node:
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node("move_group_interface", anonymous=False)
+
+        self.eef_step = 0.0001
+        # TODO: Waiting to tune this when commissioning the rig
+        self.jump_threshold = 0.0
+        # TODO: Will revisit the number once I have tested the the workspace reachability and reliability and know what failure rate I can tolerate
+        self.planning_attempts = 5
+
+        # Common joint states for a 4DOF arm
+        # TODO: Check if this will work if I make them tuples as I do not want these to be overwritten once the program starts running.
+        self.print_idle_vertical = [0, 0.46, 1.08913, -0.05522] # Joint space
+        self.print_idle_horizontal = [0, 0.925, 0.81301, -1.7303] # Joint space
+        self.arm_home = (0, -pi / 2, pi / 2, 0) # Joint space
+        self.common_poses = {"widowx1_print_home": [],
+                             "widowx1_print_idle_vertical" : list_to_pose_stamped([-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base"),
+                             "widowx2_print_home": [],
+                            }
 
         # Initialise a RobotCommander object. Provides information such as
         # the robot’s kinematic model and the robot’s current joint states
@@ -84,6 +87,7 @@ class MoveitInterface:
         self.tf_buffer = tf2_ros.Buffer(rospy.Duration(60.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
+        # TODO: RVIZ maybe already make this publisher so check if there is a conflict or redundancy
         # Create a DisplayTrajectory ROS publisher which is used to display trajectories in Rviz:
         self.display_trajectory_publisher = rospy.Publisher("/move_group/display_planned_path",
                                                             DisplayTrajectory,
@@ -91,13 +95,11 @@ class MoveitInterface:
 
         # Move robot arm to start state
         if start_state is None:
-            start_state = [0, -pi / 2, pi / 2, 0]
+            start_state = self.arm_home  # [0, -pi / 2, pi / 2, 0]
+        self.joint_go(start_state, wait=True)
+        # TODO: Add roslog into that robot arm (use namespace) has gone home and if it was successful move.
 
-        self.move_group.set_joint_value_target(start_state)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-
+        # Print additional information if verbose set to true.
         if verbose:
             # Get the name of the reference frame for this robot:
             planning_frame = self.move_group.get_planning_frame()
@@ -146,31 +148,21 @@ class MoveitInterface:
         # self.move_group.set_pose_reference_frame("base")
         # self.move_group.set_planner_id("RRTConnectkConfigDefault")
 
-    def joint_go(self, joint_target, wait=True):
-        """
-        Execute a joint target movement
-        """
-        self.move_group.set_joint_value_target(joint_target)
-        success = self.move_group.go(wait)
-
-        # Calling ``stop()`` ensures that there is no residual movement
-        self.move_group.stop()
-        return success
-
     def pose_for_linear_y_movement(self, pose_target, from_frame="base", pose_start=None):
         """
-        Calcualting new pose required for linear movement in the y-axis
+        Calculating new pose required for linear movement in the y-axis
         """
-        # if pose_start is None:
-        #     pose_start = self.move_group.get_current_pose().pose
-        # elif type(pose_start) is PoseStamped:
-        #     pose_start = pose_start.pose
-
+        # Require a PoseStamped msg. Check is Pose msg, if so convert to PoseStamped msg
         # TODO: Make a better work around for handling a Pose to PoseStamped msg
+        # TODO: Make this a private function as the user should not need to use this method directly.
         if type(pose_target) is Pose:
             pose_temp = PoseStamped()
             pose_temp.pose = pose_target
             pose_target = pose_temp
+        elif type(pose_target) is PoseStamped:
+            pass
+        else:
+            print("Expected type Pose or PoseStamped")
 
         try:
             transform = self.tf_buffer.lookup_transform(from_frame, "widowx_1_arm_base_link", rospy.Time(0))
@@ -192,30 +184,79 @@ class MoveitInterface:
             pass
 
         pose_target = tf2_geometry_msgs.do_transform_pose(pose_target, transform)
+
         return pose_target
 
+    def transform_pose(self, pose, from_frame, to_frame):
+        """
+        Transform a pose from one frame to another
+        """
+        if type(pose) is PoseStamped:
+            pass
+        elif type(pose) is Pose:
+            pose_temp = PoseStamped()
+            pose_temp.pose = pose
+            pose = pose_temp
+        try:
+            transform = self.tf_buffer.lookup_transform(from_frame, to_frame, rospy.Time(0))
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            pass
+
+        transformed_pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
+        return transformed_pose
+
     def go(self, wait=True):
+        '''
+        Execute movement to the current joint value target
+        '''
         # TODO: Refactor all code to use this go method
+        # TODO: Make this a private function as the user should not need to use this method directly.
         success = False
         attempt = 0
         while not success and attempt < self.planning_attempts:
             success = self.move_group.go(wait)
             attempt += 1
-            print(success)
-            print(attempt)
+            print(f"=== Movement attempt number: {attempt} ===")
         self.move_group.stop()
         self.move_group.clear_pose_targets()
+        return success
+
+    def joint_go(self, joint_target, wait=True):
+        """
+        Execute a joint target movement
+        """
+        self.move_group.set_joint_value_target(joint_target)
+        success = self.go(wait)
+
         return success
 
     def pose_go(self, pose_target, wait=True):
         """
         Execute a pose goal movement
         """
+        # Check for message type
         if type(pose_target) is PoseStamped:
             pose_target.header.stamp = rospy.Time.now()
+            # Check is y = 0 if not update quaternion
+            # if round(pose_target.pose.position.y, 6) == 0.0:
+            #     print("not calculating y pose stamped")
+            #     pass
+            # elif round(pose_target.pose.position.y, 6) != 0.0:
+            #     pose_target.pose = self.pose_for_linear_y_movement(pose_target.pose, "base")
+            #     print("calculating y pose stamped")
+
             pose_target.pose = round_pose_values(pose_target.pose)
             self.move_group.set_pose_target(pose_target.pose)
+
         elif type(pose_target) is Pose:
+            # Check is y = 0 if not update quaternion
+            # if round(pose_target.position.y, 6) == 0.0:
+            #     print("not calculating y pose not stamped")
+            #     pass
+            # elif round(pose_target.position.y, 6) != 0.0:
+            #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
+            #     print("calculating y pose not stamped")
+
             pose_target = round_pose_values(pose_target)
             self.move_group.set_pose_target(pose_target)
 
@@ -228,37 +269,21 @@ class MoveitInterface:
         (0..5: X, Y, Z, R, P, Y) and set the new pose as the pose target.
         Note: This does not take a quaternion but roll, pitch, yaw angles.
         """
-
         self.move_group.shift_pose_target(axis, value)
-        success = self.go(wait=True)
+        success = self.go(wait)
         return success
-
-    def transform_pose(self, pose, from_frame, to_frame):
-        """
-        Transform a pose from one frame to another
-            """
-        if type(pose) is PoseStamped:
-            pass
-
-        elif type(pose) is Pose:
-            pose_temp = PoseStamped()
-            pose_temp.pose = pose
-            pose = pose_temp
-        try:
-            transform = self.tf_buffer.lookup_transform(from_frame, to_frame, rospy.Time(0))
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            pass
-
-        trans_pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
-        return trans_pose
 
     def cartesian_go(self, goal, start=None, wait=True):
         """
         Execute a cartesian movement
         """
-        waypoints = []
         # You can plan a Cartesian path directly by specifying a
         # list of waypoints for the end-effector to go through.
+
+        # Initialising an empty list of waypoints
+        waypoints = []
+
+        # Setting the start waypoint
         if start is None:
             wpose_start = self.move_group.get_current_pose().pose  # PoseStamped
             waypoints.append(copy.deepcopy(wpose_start))
@@ -267,68 +292,104 @@ class MoveitInterface:
         elif type(start) is PoseStamped:
             waypoints.append(copy.deepcopy(start.pose))
 
+        # Setting the goal waypoint
         if type(goal) is PoseStamped:
             waypoints.append(copy.deepcopy(goal.pose))
         elif type(goal) is Pose:
             waypoints.append(copy.deepcopy(goal))
 
-        # We want the Cartesian path to be interpolated at a resolution of 1 mm
-        # which is why we will specify 0.001 as the eef_step in Cartesian
-        # translation.  We will disable the jump threshold by setting it to 0.0,
-        # ignoring the check for infeasible jumps in joint space, which is sufficient
-        # for this tutorial.
+        # Check if a new quaternion needs to be calculated. This is required for any movements where y != 0 as the
+        # default quaternion is for y = 0
+        if round(waypoints[-1].position.y, 6) == 0.0:
+            pass
+        elif round(waypoints[-1].position.y, 6) != 0.0:
+            goal = self.pose_for_linear_y_movement(waypoints[-1], "base", start)
+            waypoints[-1] = copy.deepcopy(goal.pose)
+
+        # We want the Cartesian path to be interpolated at a resolution of 0.1 mm
+        # which is why we will specify 0.0001 as the eef_step in Cartesian translation.
+        # The jump_threshold will be tuned in the commissioning for now set to 0 to disable checks
+
         (plan, fraction) = self.move_group.compute_cartesian_path(
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
-        # display_trajectory = DisplayTrajectory()
-        # display_trajectory.trajectory_start = self.robot.get_current_state()
-        # display_trajectory.trajectory.append(plan)
-
-
-        # Publish
-        # self.display_trajectory_publisher.publish(display_trajectory)
+        # Publish the plan as a trajectory
+        display_trajectory = DisplayTrajectory()
+        display_trajectory.trajectory_start = self.robot.get_current_state()
+        display_trajectory.trajectory.append(plan)
+        self.display_trajectory_publisher.publish(display_trajectory)
         # Note: We are just planning, not asking move_group to actually move the robot yet:
 
-        # print(f"=== Plan: {plan} ===")
-        # print("\n")
-        # Executing a Plan
-        self.move_group.execute(plan, wait=True)
-        # self.move_group.stop()
-        # self.move_group.clear_pose_targets()
+        # TODO: Add a roslog info message here confirming the movement and the end and start pose if verbose set to true actually do something similar for all movements and reference the namespace too
 
-        # TODO: Change back to fraction when debugging done
-        return plan
+        self.move_group.execute(plan, wait)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
 
-    def go_home(self, robot_arm="widowx1"):
+        return fraction
+
+    def go_home(self, pose="widowx1_print_idle_vertical"):
+        '''
+        Special movement for returning to common poses. For example and pose for an idle state.
+        This movement assumes printing could be happening when called therefore the movement will have a specific order
+        of waypoints. First a positive relative movement in the z-direction, this is to avoid collision with the
+        work piece. Then a cartesian translation to the target xy position. Then a movement in z-direction to the target z-position
+        '''
         # TODO: Add a check for the orientation of the end effector to make sure it was in printing mode before doing home movement
-        home_pose = self.home_pose["widowx1"]
+        waypoints = []
         successes = []
+
+        # Stop current movement and remove targets
+        # TODO: Need to add a way to keep track of what movements have been done versus queued so when a print is interrupted it can resume from where it stopped and not where it has planned up to as clear pose target will erase those trajectories
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+        # Set the start waypoint as the current pose
         wpose = self.move_group.get_current_pose().pose
-        # waypoints.append(copy.deepcopy(wpose))
+        waypoints.append(copy.deepcopy(wpose))
 
         # Clear the print bed or work piece by 30mm
         wpose.position.z = wpose.position.z + 0.03
-        # waypoints.append(copy.deepcopy(wpose))
-        success = self.cartesian_go(wpose, wait=True)
-        successes.append(success)
+        waypoints.append(copy.deepcopy(wpose))
+        # success = self.cartesian_go(wpose, wait=True)
+        # successes.append(success)
 
-        # Go to home co-ordinates in x and y
-        wpose.position.x = home_pose.position.x
-        wpose.position.y = home_pose.position.y
-        # waypoints.append(copy.deepcopy(wpose))
-        success = self.cartesian_go(wpose, wait=True)
-        successes.append(success)
+        # Get the target pose from the common pose dictionary a class attribute
+        target_pose = self.common_poses[pose]
 
-        # Finally go to home co-ordinates in z
-        wpose.position.z = home_pose.position.z
-        # waypoints.append(copy.deepcopy(wpose))
-        success = self.cartesian_go(wpose, wait=True)
-        successes.append(success)
+        # Go to target xy co-ordinates
+        wpose.position.x = target_pose.position.x
+        wpose.position.y = target_pose.position.y
+        waypoints.append(copy.deepcopy(wpose))
+        # success = self.cartesian_go(wpose, wait=True)
+        # successes.append(success)
 
-        if all(successes):
-            return True
-        else:
-            return False
+        # Finally go to target z-position
+        wpose.position.z = target_pose.position.z
+        waypoints.append(copy.deepcopy(wpose))
+        # success = self.cartesian_go(wpose, wait=True)
+        # successes.append(success)
+
+        # if all(successes):
+        #     return True
+        # else:
+        #     return False
+
+        (plan, fraction) = self.move_group.compute_cartesian_path(
+            waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
+
+        # Publish the plan as a trajectory
+        display_trajectory = DisplayTrajectory()
+        display_trajectory.trajectory_start = self.robot.get_current_state()
+        display_trajectory.trajectory.append(plan)
+        self.display_trajectory_publisher.publish(display_trajectory)
+        # Note: We are just planning, not asking move_group to actually move the robot yet:
+
+        self.move_group.execute(plan, wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+
+        return fraction
 
     def run_demo(self):
         """
@@ -337,64 +398,89 @@ class MoveitInterface:
         vertical_printing_quaternion = (0.000000, 1.000000, 0.000000, 0.000000)
         horizontal_printing_quaternion = (0.000000, 0.7071068, 0.000000, 0.7071068)
 
-        # Change this to be the back corner of the print bed so the hot ends are far away from the user and work piece
         q = quaternion_from_euler(-pi, 0, -pi)  # equal [0, 1, 0, 0] quaternion
-        vertical_printing_idle = [0.100000 - 0.245, 0.00000111, 0.10000111 + 0.04, 0.000000, 1.000000, 0.000000,
+
+        # In widowx_1_arm_base_link frame
+        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
                                   0.000000]
-        horizontal_printing_idle = []
 
-        robot_arm_idle = (0, 0, 0, pi / 4)
-        robot_arm_home = (0, -pi / 2, pi / 2, 0)
-        waypoints = []
 
+        #############################################################################################################
+                                                # Joint space movement
+        #############################################################################################################
+        # Robot arm should initialise to its default home position but just incase it will be done here.
         # Start at robot arm home position.
-        success = self.joint_go(robot_arm_home, wait=True)
         print("=====================================================")
+        print(f"================ Joint space test ==================")
+        print(f"=== Attempting move to robot home ===")
+
+        success = self.joint_go(self.arm_home, wait=True)
+
         print("=====================================================")
         print(f"=== Successfully gone to robot home: {success} ===")
         print("\n")
+        #############################################################################################################
+                                                # Joint space movement
+        #############################################################################################################
 
+        #############################################################################################################
+                                                # Pose movement
+        #############################################################################################################
         # Go to vertical printing home position
+        print("=====================================================")
+        print(f"================ Pose movement test ==================")
+        print(f"=== Attempting move to vertical printing idle position ===")
+
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
+
+        print("=====================================================")
         print(f"=== Successfully gone to vertical printing idle position: {success} ===")
         print("\n")
+        #############################################################################################################
+                                                # Pose movement
+        #############################################################################################################
 
-        # Do a relative pose movement
-        # In X axis
-        pose = self.move_group.get_current_pose()  # type is PoseStamped and not Pose
+
+        #############################################################################################################
+                                                # Relative pose movement
+        #############################################################################################################
+        # Do a relative pose movement in x-axis
+        print("=====================================================")
+        print(f"================ Relative pose movement test ==================")
+        print(f"=== Attempting a relative move in the x-axis of +0.1m ===")
+
         success = self.relative_pose_go(0, 0.10, wait=True)
-        print(f"=== Successfully executed relative movement: {success} ===")
+        print(f"=== Successfully executed relative movement in x-axis: {success} ===")
         print("\n")
 
         # In Z axis
-        pose = self.move_group.get_current_pose()  # type is PoseStamped and not Pose
+        print(f"=== Attempting a relative move in the z-axis of +0.05m ===")
         success = self.relative_pose_go(2, 0.05, wait=True)
-        print(f"=== Successfully executed relative movement: {success} ===")
+        print(f"=== Successfully executed relative movement in z-axis: {success} ===")
         print("\n")
 
-        # Go to vertical printing home position using transform
-        #########################################################################################
-        # No transform required manual done relative to the base of the robot arm.
-        # vertical_printing_idle_pose = list_to_pose(
-        #     [0.100000 - 0.245, 0.00000111, 0.10000111 + 0.04, 0.000000, 1.000000, 0.000000,
-        #      0.000000])
-        # success = self.pose_go(vertical_printing_idle_pose)
-        #########################################################################################
+        # In Y axis - This will not work as the quaternion for the widowx also needs to be calculate which this
+        # function lacks
+        print(f"=== Attempting a relative move in the y-axis of +0.1m ===")
+        success = self.relative_pose_go(1, 0.1, wait=True)
+        print(f"=== Successfully executed relative movement in y-axis: {success} ===")
+        print("\n")
+        #############################################################################################################
+                                                # Relative Pose movement
+        #############################################################################################################
 
-        #########################################################################################
-        # Transform required. Think of it as we were in the "base" frame now we are in the "widowx1_arm_base_link" frame
-        # So all coordinate can be written in the robot arm bases frame.
-        # vertical_printing_idle_pose = list_to_pose([0.100000, 0.00000111, 0.10000111, 0.000000, 1.000000, 0.000000,
-        #                                             0.000000])
-        # trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "widowx_1_arm_base_link")
-        # trans_pose.pose = round_pose_values(trans_pose.pose)
-        # success = self.pose_go(trans_pose.pose)
-        ########################################################################################
 
-        ########################################################################################
-        # Transform required. Think of it as we were in the "base" frame now we are in the "buildplate" frame
-        # So all coordinate can be written in the buildplate frame.
+        #############################################################################################################
+                                                # Pose movement using transform
+        #############################################################################################################
+        # Transform required. The final frame required for planner is the base frame, if we want to write commands
+        # relative to the buildplate from of reference they need to be the transformed back into the base frame
+        # which can then be sent to the planner
+        print("=====================================================")
+        print(f"================ Pose movement using a transform test ==================")
+        print(f"=== Attempting pose movement using the buildplate frame of reference ===")
+
         vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
                                                     0.000000])
         trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "buildplate")
@@ -403,26 +489,33 @@ class MoveitInterface:
         print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
         print("\n")
 
-        #############
+        #############################################################################################################
+                                                # Pose movement using transform
+        #############################################################################################################
+
+        #############################################################################################################
+                                                # Pose movement in y-axis using transform
+        #############################################################################################################
+
+        # Due to hardware limitations anytime a movement is done the quaternion will also change and this has to be worked out.
+        print("=====================================================")
+        print(f"================ Pose movement using a transform in y-axis test ==================")
+        print(f"=== Attempting pose movement using the buildplate frame of reference in y-axis ===")
         pose_target = PoseStamped()
         pose_target.pose = list_to_pose([0.100000, 0.100000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000])
-        if abs(pose_target.pose.position.y) >= 1e-3:
-            yaw = atan(pose_target.pose.position.y / pose_target.pose.position.x)
-            q = quaternion_from_euler(-pi, 0, -pi + yaw)
-            print(f" Yaw is {yaw}")
-            print(f"q is {q}")
-            pose_target.pose.orientation.x = q[0]
-            pose_target.pose.orientation.y = q[1]
-            pose_target.pose.orientation.z = q[2]
-            pose_target.pose.orientation.w = q[3]
-            print(f" New pose is {pose_target.pose}")
-            # pose_target = self.pose_for_linear_y_movement(pose_target, "base")
-        trans_pose = self.transform_pose(pose_target, "base", "widowx_1_arm_base_link")
-        trans_pose.pose = round_pose_values(trans_pose.pose)
-        success = self.pose_go(trans_pose.pose)
-        print(f"=== Successfully move in Y axis: {success} ===")
+        if round(pose_target.pose.position.y, 6) != 0.0:
+            pose_target = self.pose_for_linear_y_movement(pose_target, "widowx_1_arm_base_link")
+        pose_target = self.transform_pose(pose_target, "base", "widowx_1_arm_base_link")
+        pose_target.pose = round_pose_values(pose_target.pose)
+        success = self.pose_go(pose_target.pose)
+        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
         print("\n")
-        #############
+
+        #############################################################################################################
+                                                # Pose movement in y-axis using transform
+        #############################################################################################################
+
+
 
         ########################################################################################
         # Transform required. Think of it as we were in the "base" frame now we are in the "buildplate" frame
@@ -542,5 +635,5 @@ class MoveitInterface:
 
 if __name__ == "__main__":
     cramped_interface = MoveitInterface(verbose=True)
-    cramped_interface.setup(set_planning_time=3)
+    cramped_interface.setup(set_planning_time=1)
     cramped_interface.run_demo()
