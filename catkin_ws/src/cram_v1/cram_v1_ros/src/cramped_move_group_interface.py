@@ -15,8 +15,9 @@ from std_msgs.msg import String
 
 from moveit_commander.conversions import pose_to_list
 from moveit_commander.conversions import list_to_pose
+from moveit_commander.conversions import list_to_pose_stamped
 
-import test_IK
+#import test_IK
 
 
 def round_pose_values(pose, sigfig=6):
@@ -50,7 +51,7 @@ class MoveitInterface:
         Initialises relevant MoveIt things, sets up ROS interfaces, and go to an initial ready pose.
         """
         self.eef_step = 0.0001
-        self.jump_threshold = 0.01
+        self.jump_threshold = 0.0
         self.planning_attempts = 5
 
         # Common joint states for a 4DOF arm
@@ -279,21 +280,24 @@ class MoveitInterface:
         (plan, fraction) = self.move_group.compute_cartesian_path(
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
-        display_trajectory = DisplayTrajectory()
-        display_trajectory.trajectory_start = self.robot.get_current_state()
-        display_trajectory.trajectory.append(plan)
+        # display_trajectory = DisplayTrajectory()
+        # display_trajectory.trajectory_start = self.robot.get_current_state()
+        # display_trajectory.trajectory.append(plan)
+
+
         # Publish
-        self.display_trajectory_publisher.publish(display_trajectory)
+        # self.display_trajectory_publisher.publish(display_trajectory)
         # Note: We are just planning, not asking move_group to actually move the robot yet:
 
         # print(f"=== Plan: {plan} ===")
         # print("\n")
         # Executing a Plan
-        # self.move_group.execute(plan, wait=True)
+        self.move_group.execute(plan, wait=True)
         # self.move_group.stop()
         # self.move_group.clear_pose_targets()
 
-        return fraction
+        # TODO: Change back to fraction when debugging done
+        return plan
 
     def go_home(self, robot_arm="widowx1"):
         # TODO: Add a check for the orientation of the end effector to make sure it was in printing mode before doing home movement
@@ -421,61 +425,78 @@ class MoveitInterface:
         #############
 
         ########################################################################################
-        # TODO: Refactor trac_IK properly
-        # TODO: Figure out how to pass in the base_link and tip_link without hardcoding them
-        ik_solver = test_IK.IK(base_link="widowx_1_arm_base_link", tip_link="widowx_1_wrist_1_link")
-        print(ik_solver.joint_names)
-        lb, ub = ik_solver.get_joint_limits()
-        print(lb, ub)
-        seed = self.move_group.get_current_joint_values()  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
-        print(f"get joint type is {type(seed)}")
+        # Transform required. Think of it as we were in the "base" frame now we are in the "buildplate" frame
+        # So all coordinate can be written in the buildplate frame.
+        vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+                                                    0.000000])
+        trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "buildplate")
+        trans_pose.pose = round_pose_values(trans_pose.pose)
+        success = self.pose_go(trans_pose.pose)
+        print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
+        print("\n")
 
-        # vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
-        #                                             0.000000])
-        # target_pose = self.transform_pose(vertical_printing_idle_pose, "widowx_1_wrist_1_link" , "buildplate")
-        target_pose = list_to_pose([0.100000, 0.00000111, 0.10000111, 0.000000, 1.000000, 0.000000,
-                                    0.000000])
-        #target_pose.pose = round_pose_values(target_pose.pose)
-        target_pose = round_pose_values(target_pose)
 
-        # sol = ik_solver.get_ik(seed, target_pose.pose.position.x, target_pose.pose.position.y,
-        #                        target_pose.pose.position.z, target_pose.pose.orientation.x,
-        #                        target_pose.pose.orientation.y, target_pose.pose.orientation.z,
-        #                        target_pose.pose.orientation.w)
+        ########################################################################################
+        # # TODO: Refactor trac_IK properly
+        # # TODO: Figure out how to pass in the base_link and tip_link without hardcoding them
+        # ik_solver = test_IK.IK(base_link="widowx_1_arm_base_link", tip_link="widowx_1_wrist_1_link")
+        # print(ik_solver.joint_names)
+        # lb, ub = ik_solver.get_joint_limits()
+        # print(lb, ub)
+        # seed = self.move_group.get_current_joint_values()  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
+        # print(f"get joint type is {type(seed)}")
+        #
+        # # vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+        # #                                             0.000000])
+        # # target_pose = self.transform_pose(vertical_printing_idle_pose, "widowx_1_wrist_1_link" , "buildplate")
+        # target_pose = list_to_pose([0.100000, 0.00000111, 0.10000111, 0.000000, 1.000000, 0.000000,
+        #                             0.000000])
+        # #target_pose.pose = round_pose_values(target_pose.pose)
+        # target_pose = round_pose_values(target_pose)
+        #
+        # # sol = ik_solver.get_ik(seed, target_pose.pose.position.x, target_pose.pose.position.y,
+        # #                        target_pose.pose.position.z, target_pose.pose.orientation.x,
+        # #                        target_pose.pose.orientation.y, target_pose.pose.orientation.z,
+        # #                        target_pose.pose.orientation.w)
+        #
+        # sol = ik_solver.get_ik(seed, target_pose.position.x, target_pose.position.y,
+        #                        target_pose.position.z, target_pose.orientation.x,
+        #                        target_pose.orientation.y, target_pose.orientation.z,
+        #                        target_pose.orientation.w)
+        #
+        # print(f"Solution is {sol}")
+        #
+        # success = self.joint_go(sol, wait=True)
 
-        sol = ik_solver.get_ik(seed, target_pose.position.x, target_pose.position.y,
-                               target_pose.position.z, target_pose.orientation.x,
-                               target_pose.orientation.y, target_pose.orientation.z,
-                               target_pose.orientation.w)
 
-        print(f"Solution is {sol}")
 
-        success = self.joint_go(sol, wait=True)
 
         # q = quaternion_from_euler(-pi, 0, -pi + pi / 4)
         # sol = ik_solver.get_ik(seed, 0.100000, 0.100000, 0.100000, q[0], q[1], q[2],
         #                        q[3])
 
         # sol = ik_solver.get_ik(seed, 0.100000, 0.00000, 0.100000, 0, 1, 0, 0)
-
-        print("\n")
-        print("=====================================================")
-        print(sol)
-        print("=====================================================")
-        print("\n")
-        print(f"=== Successfully executed movement by manually call the IK solver: {success} ===")
-        print("\n")
+        #
+        # print("\n")
+        # print("=====================================================")
+        # print(sol)
+        # print("=====================================================")
+        # print("\n")
+        # print(f"=== Successfully executed movement by manually call the IK solver: {success} ===")
+        # print("\n")
         ########################################################################################
 
         # Go to the middle of the print bed in XY
-        # pose.pose = list_to_pose([0.15, 0.15, 0.01, 0.000000, 1.000000, 0.000000, 0.000000])
-        pose.header.stamp = rospy.Time.now()
-        pose.pose = list_to_pose(vertical_printing_idle)
-        # trans_pose = self.transform_pose(pose, "base", "base")
-        # trans_pose.pose = round_pose_values(trans_pose.pose)
-        followed_percentage = self.cartesian_go(pose.pose)
-        print(f"=== Executed cartesian movement following {followed_percentage} % of requested trajectory ===")
-        print("\n")
+        pose = list_to_pose_stamped([-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
+        #trans_pose = self.transform_pose(pose, "world", "widowx_1_arm_base_link")
+        #trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "widowx_1_arm_base_link")
+        trans_pose = round_pose_values(pose)
+        plan = self.cartesian_go(pose)
+        print(type(plan))
+        print(plan)
+
+        # print(f"=== Executed cartesian movement following {followed_percentage} % of requested trajectory ===")
+        # print("\n")
 
         # # Go to the edge of the print bed in Y
         # pose.pose.position.y = 0.3

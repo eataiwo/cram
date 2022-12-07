@@ -2,6 +2,8 @@ import trac_ik
 import json
 import time
 
+# Script to get WidowX robot to move to posistions in its workspace and see if they are sucessfull in getting there.
+
 startTime = time.time()
 
 ik_solver = trac_ik.IK(base_link="widowx_2_arm_base_link", tip_link="widowx_2_wrist_1_link")
@@ -22,7 +24,7 @@ k = list(range(0, 26))
 ds_i = list(range(0, 9))
 ds_j = list(range(-8, 9))
 ds_k = list(range(0, 26))
-
+# Testing
 # Workspace
 grid = [(value_i, value_j, value_k) for col, value_i in enumerate(i) for col, value_j in enumerate(j)
         for row, value_k in enumerate(k)]
