@@ -588,7 +588,7 @@ class MoveitInterface:
 
         # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.200000, 0.000000, 1.000000, 0.000000, 0.000000],
         #                                    "buildplate")
-
+        #sddfsdf
         pose_target = list_to_pose_stamped([-0.1, 0.1, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
         if round(pose_target.pose.position.y, 6) != 0.0:
             pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
