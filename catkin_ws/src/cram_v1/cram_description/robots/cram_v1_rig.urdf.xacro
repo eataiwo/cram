@@ -4,6 +4,8 @@
 <robot name="widowx_arm" xmlns:xacro="http://ros.org/wiki/xacro">
 	<xacro:arg name="arm_id_1" default="widowx_1" />
   	<xacro:arg name="arm_id_2" default="widowx_2" />
+	<xacro:property name="M_SCALE" value="0.001"/>
+	<xacro:property name="M_PI" value="3.14159"/>
 
 	<xacro:include filename="$(find cram_description )/urdf/widowx.urdf.xacro"/>
 	<xacro:include filename="$(find cram_description )/urdf/widowxl.urdf.xacro"/>
@@ -52,11 +54,30 @@
 		<child link="buildplate"/>
 	</joint>
 
+
 	<!-- widowx arm with hotend -->
-	<xacro:widowx_arm arm_id="$(arg arm_id_1)" connected_to="base"  xyz="-0.245 0  0.04" rpy=" 0 0 0 "/> />
-	<xacro:hotend ns="$(arg arm_id_1)" rpy="0 0 0" connected_to="$(arg arm_id_1)_wrist_1_link"/>
+	<xacro:widowx_arm arm_id="$(arg arm_id_1)" connected_to="base"  xyz="-0.245 0  0.04" rpy=" 0 0 0 "/>
+<!--	<xacro:hotend ns="$(arg arm_id_1)" rpy="0 0 0" connected_to="$(arg arm_id_1)_wrist_1_link"/>-->
+
+	<xacro:hotend ns="$(arg arm_id_1)"/>
+	<joint name="$(arg arm_id_1)_joint_5" type="revolute">
+         <origin xyz="0 0 ${M_SCALE*71.5}" rpy="0 0 0" />
+         <parent link="$(arg arm_id_1)_wrist_1_link" />
+         <child link="$(arg arm_id_1)_hotend" />
+         <axis xyz="0 0 1" />
+         <limit lower="-2.617" upper="2.617" effort="0" velocity="1.571" />
+	</joint>
 
 	<!-- widowxl arm with hotend -->
-	<xacro:widowxl_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0.245 0 0.04" rpy="0 0 3.14159"/> />
-	<xacro:hotend ns="$(arg arm_id_2)" rpy="0 0 0" connected_to="$(arg arm_id_2)_wrist_1_link"/>
+	<xacro:widowxl_arm arm_id="$(arg arm_id_2)" connected_to="base"  xyz="0.245 0 0.04" rpy="0 0 3.14159"/>
+<!--	<xacro:hotend ns="$(arg arm_id_2)" rpy="0 0 0" connected_to="$(arg arm_id_2)_wrist_1_link"/>-->
+	<xacro:hotend ns="$(arg arm_id_2)" />
+		<joint name="$(arg arm_id_2)_joint_5" type="revolute">
+         <origin xyz="0 0 ${M_SCALE*71.5}" rpy="0 0 0" />
+         <parent link="$(arg arm_id_2)_wrist_1_link" />
+         <child link="$(arg arm_id_2)_hotend" />
+         <axis xyz="0 0 1" />
+         <limit lower="-2.617" upper="2.617" effort="0" velocity="1.571" />
+	</joint>
+
 </robot>
