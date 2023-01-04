@@ -4,15 +4,17 @@ import sys
 import copy
 import rospy
 import moveit_commander
-#import geometry_msgs.msg
+# import geometry_msgs.msg
 import tf2_ros
 import tf2_geometry_msgs
 
 from moveit_msgs.msg import DisplayTrajectory
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from tf.transformations import quaternion_from_euler, euler_from_quaternion, quaternion_multiply
 from math import pi, atan, tau, dist, fabs, cos, floor
 from geometry_msgs.msg import Pose, PoseStamped
 from moveit_commander.conversions import pose_to_list, list_to_pose, list_to_pose_stamped
+
+
 # from std_msgs.msg import String
 
 # TODO: Add comprehensive docstring to every method and function.
@@ -38,6 +40,8 @@ def round_pose_values(pose, sigfig=6):
         pose.orientation.w = round(pose.orientation.w, sigfig)
 
     return pose
+
+
 class MoveitInterface:
     def __init__(self, group_name="widowx_1", verbose=False,
                  start_state=None):
@@ -60,13 +64,15 @@ class MoveitInterface:
 
         # Common joint states for a 4DOF arm
         # TODO: Check if this will work if I make them tuples as I do not want these to be overwritten once the program starts running.
-        self.print_idle_vertical = [0, 0.46, 1.08913, -0.05522] # Joint space
-        self.print_idle_horizontal = [0, 0.925, 0.81301, -1.7303] # Joint space
-        self.arm_home = (0, -pi / 2, pi / 2, 0) # Joint space
+        self.print_idle_vertical = [0, 0.46, 1.08913, -0.05522]  # Joint space
+        self.print_idle_horizontal = [0, 0.925, 0.81301, -1.7303]  # Joint space
+        self.arm_home = (0, -pi / 2, pi / 2, 0)  # Joint space
+        self.robot_arm_base_frame = "widowx_1_arm_base_link"
         self.common_poses = {"widowx1_print_home": [],
-                             "widowx1_print_idle_vertical" : list_to_pose_stamped([-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base"),
+                             "widowx1_print_idle_vertical": list_to_pose_stamped(
+                                 [-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base"),
                              "widowx2_print_home": [],
-                            }
+                             }
 
         # Initialise a RobotCommander object. Provides information such as
         # the robot’s kinematic model and the robot’s current joint states
@@ -148,7 +154,7 @@ class MoveitInterface:
         # self.move_group.set_pose_reference_frame("base")
         # self.move_group.set_planner_id("RRTConnectkConfigDefault")
 
-    def pose_for_linear_y_movement(self, pose_target, from_frame="base", pose_start=None):
+    def pose_for_linear_y_movement(self, pose_target, from_frame="buildplate", pose_start=None):
         """
         Calculating new pose required for linear movement in the y-axis
         """
@@ -165,13 +171,24 @@ class MoveitInterface:
             print("Expected type Pose or PoseStamped")
 
         try:
-            transform = self.tf_buffer.lookup_transform(from_frame, "widowx_1_arm_base_link", rospy.Time(0))
+            transform = self.tf_buffer.lookup_transform(self.robot_arm_base_frame, from_frame, rospy.Time(0))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             pass
-
+        # Transform pose to the reference frame of the robot arm as the rotation will happen around the base
         pose_target = tf2_geometry_msgs.do_transform_pose(pose_target, transform)
-        yaw = atan(pose_target.pose.position.y / pose_target.pose.position.x)
-        q = quaternion_from_euler(-pi, 0, -pi + yaw)
+
+        # Work out angle rotated by. Anti-clockwise is a positive theta
+        theta = atan(pose_target.pose.position.y / pose_target.pose.position.x)
+
+        # Original quaternion orientation
+        q_orig = [pose_target.pose.orientation.x, pose_target.pose.orientation.y, pose_target.pose.orientation.z,
+                  pose_target.pose.orientation.w]
+
+        # Rotational quaternion
+        q_rot = quaternion_from_euler(0, 0, theta)
+
+        # New quaternion
+        q = quaternion_multiply(q_rot, q_orig)
 
         pose_target.pose.orientation.x = q[0]
         pose_target.pose.orientation.y = q[1]
@@ -179,7 +196,7 @@ class MoveitInterface:
         pose_target.pose.orientation.w = q[3]
 
         try:
-            transform = self.tf_buffer.lookup_transform("widowx_1_arm_base_link", from_frame, rospy.Time(0))
+            transform = self.tf_buffer.lookup_transform("base", self.robot_arm_base_frame, rospy.Time(0))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             pass
 
@@ -198,7 +215,7 @@ class MoveitInterface:
             pose_temp.pose = pose
             pose = pose_temp
         try:
-            transform = self.tf_buffer.lookup_transform(from_frame, to_frame, rospy.Time(0))
+            transform = self.tf_buffer.lookup_transform(to_frame, from_frame, rospy.Time(0))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             pass
 
@@ -216,6 +233,7 @@ class MoveitInterface:
         while not success and attempt < self.planning_attempts:
             success = self.move_group.go(wait)
             attempt += 1
+            # TODO: Change print statement to a roslog for ros debugging. Indicate where the statement is coming from
             print(f"=== Movement attempt number: {attempt} ===")
         self.move_group.stop()
         self.move_group.clear_pose_targets()
@@ -298,13 +316,10 @@ class MoveitInterface:
         elif type(goal) is Pose:
             waypoints.append(copy.deepcopy(goal))
 
-        # Check if a new quaternion needs to be calculated. This is required for any movements where y != 0 as the
-        # default quaternion is for y = 0
-        if round(waypoints[-1].position.y, 6) == 0.0:
-            pass
-        elif round(waypoints[-1].position.y, 6) != 0.0:
-            goal = self.pose_for_linear_y_movement(waypoints[-1], "base", start)
-            waypoints[-1] = copy.deepcopy(goal.pose)
+        print("=====================================================")
+        print(f"=== Waypoints {waypoints} ===")
+        print("=====================================================")
+        print("\n")
 
         # We want the Cartesian path to be interpolated at a resolution of 0.1 mm
         # which is why we will specify 0.0001 as the eef_step in Cartesian translation.
@@ -314,19 +329,23 @@ class MoveitInterface:
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
         # Publish the plan as a trajectory
-        display_trajectory = DisplayTrajectory()
-        display_trajectory.trajectory_start = self.robot.get_current_state()
-        display_trajectory.trajectory.append(plan)
-        self.display_trajectory_publisher.publish(display_trajectory)
+        # display_trajectory = DisplayTrajectory()
+        # display_trajectory.trajectory_start = self.robot.get_current_state()
+        # display_trajectory.trajectory.append(plan)
+        # self.display_trajectory_publisher.publish(display_trajectory)
+        # print("\n")
+        # print(f"display trajectory = \n {display_trajectory}")
+        # print("\n")
+
         # Note: We are just planning, not asking move_group to actually move the robot yet:
 
         # TODO: Add a roslog info message here confirming the movement and the end and start pose if verbose set to true actually do something similar for all movements and reference the namespace too
 
-        self.move_group.execute(plan, wait)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        success = self.move_group.execute(plan, wait)
+        # self.move_group.stop()
+        # self.move_group.clear_pose_targets()
 
-        return fraction
+        return success
 
     def go_home(self, pose="widowx1_print_idle_vertical"):
         '''
@@ -398,15 +417,8 @@ class MoveitInterface:
         vertical_printing_quaternion = (0.000000, 1.000000, 0.000000, 0.000000)
         horizontal_printing_quaternion = (0.000000, 0.7071068, 0.000000, 0.7071068)
 
-        q = quaternion_from_euler(-pi, 0, -pi)  # equal [0, 1, 0, 0] quaternion
-
-        # In widowx_1_arm_base_link frame
-        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
-                                  0.000000]
-
-
         #############################################################################################################
-                                                # Joint space movement
+        # Joint space movement
         #############################################################################################################
         # Robot arm should initialise to its default home position but just incase it will be done here.
         # Start at robot arm home position.
@@ -420,17 +432,20 @@ class MoveitInterface:
         print(f"=== Successfully gone to robot home: {success} ===")
         print("\n")
         #############################################################################################################
-                                                # Joint space movement
+        # Joint space movement
         #############################################################################################################
 
         #############################################################################################################
-                                                # Pose movement
+        # Pose movement
         #############################################################################################################
         # Go to vertical printing home position
         print("=====================================================")
         print(f"================ Pose movement test ==================")
         print(f"=== Attempting move to vertical printing idle position ===")
 
+        # In base/world frame
+        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
+                                  0.000000]  # = [-0.145, 0, 0.14, 0, 1, 0, 0]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
 
@@ -438,12 +453,11 @@ class MoveitInterface:
         print(f"=== Successfully gone to vertical printing idle position: {success} ===")
         print("\n")
         #############################################################################################################
-                                                # Pose movement
+        # Pose movement
         #############################################################################################################
 
-
         #############################################################################################################
-                                                # Relative pose movement
+        # Relative pose movement
         #############################################################################################################
         # Do a relative pose movement in x-axis
         print("=====================================================")
@@ -460,142 +474,132 @@ class MoveitInterface:
         print(f"=== Successfully executed relative movement in z-axis: {success} ===")
         print("\n")
 
-        # In Y axis - This will not work as the quaternion for the widowx also needs to be calculate which this
+        # In Y axis - This will not work as the quaternion for the widowx also needs to be calculated which this
         # function lacks
         print(f"=== Attempting a relative move in the y-axis of +0.1m ===")
         success = self.relative_pose_go(1, 0.1, wait=True)
         print(f"=== Successfully executed relative movement in y-axis: {success} ===")
         print("\n")
         #############################################################################################################
-                                                # Relative Pose movement
+        # Relative Pose movement
         #############################################################################################################
 
-
         #############################################################################################################
-                                                # Pose movement using transform
+        # Pose movement using transform
         #############################################################################################################
         # Transform required. The final frame required for planner is the base frame, if we want to write commands
         # relative to the buildplate from of reference they need to be the transformed back into the base frame
         # which can then be sent to the planner
         print("=====================================================")
         print(f"================ Pose movement using a transform test ==================")
-        print(f"=== Attempting pose movement using the buildplate frame of reference ===")
+        print(f"=== Attempting pose movement using the build plate frame of reference ===")
 
-        vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
-                                                    0.000000])
-        trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "buildplate")
+        # Same point as vertical_print_idle in pose_movement defined above but in buildplate frame
+        vertical_printing_idle = [0.0005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+                                  0.000000]
+        vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
+        trans_pose = self.transform_pose(vertical_printing_idle_pose, "buildplate", "base")
         trans_pose.pose = round_pose_values(trans_pose.pose)
         success = self.pose_go(trans_pose.pose)
         print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
         print("\n")
 
         #############################################################################################################
-                                                # Pose movement using transform
+        # Pose movement using transform
         #############################################################################################################
 
         #############################################################################################################
-                                                # Pose movement in y-axis using transform
+        # Pose movement in y-axis using transform
         #############################################################################################################
 
-        # Due to hardware limitations anytime a movement is done the quaternion will also change and this has to be worked out.
+        # Due to hardware limitations anytime a movement is done the quaternion will also change and this has to be
+        # worked out.
         print("=====================================================")
         print(f"================ Pose movement using a transform in y-axis test ==================")
-        print(f"=== Attempting pose movement using the buildplate frame of reference in y-axis ===")
+        print(f"=== Attempting pose movement using the widowx_1_arm_base_link frame of reference in y-axis ===")
         pose_target = PoseStamped()
         pose_target.pose = list_to_pose([0.100000, 0.100000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000])
         if round(pose_target.pose.position.y, 6) != 0.0:
             pose_target = self.pose_for_linear_y_movement(pose_target, "widowx_1_arm_base_link")
-        pose_target = self.transform_pose(pose_target, "base", "widowx_1_arm_base_link")
+        pose_target.pose = round_pose_values(pose_target.pose)
+        success = self.pose_go(pose_target.pose)
+        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
+        print("\n")
+
+        print(f"=== Attempting pose movement using the buildplate frame of reference in y-axis ===")
+        pose_target = PoseStamped()
+        pose_target.pose = list_to_pose([0.100000, 0.100000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000])
+        if round(pose_target.pose.position.y, 6) != 15.0:
+            pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
         pose_target.pose = round_pose_values(pose_target.pose)
         success = self.pose_go(pose_target.pose)
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
         print("\n")
 
         #############################################################################################################
-                                                # Pose movement in y-axis using transform
+        # Pose movement in y-axis using transform
         #############################################################################################################
 
+        #############################################################################################################
+        # Pose movement using transform
+        #############################################################################################################
+        # Transform required. The final frame required for planner is the base frame, if we want to write commands
+        # relative to the buildplate from of reference they need to be the transformed back into the base frame
+        # which can then be sent to the planner
+        print("=====================================================")
+        print(f"================ Pose movement using a transform test ==================")
+        print(f"=== Attempting pose movement using the build plate frame of reference ===")
 
-
-        ########################################################################################
-        # Transform required. Think of it as we were in the "base" frame now we are in the "buildplate" frame
-        # So all coordinate can be written in the buildplate frame.
-        vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
-                                                    0.000000])
-        trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "buildplate")
+        # Same point as vertical_print_idle in pose_movement defined above but in buildplate frame
+        vertical_printing_idle = [0.0005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+                                  0.000000]
+        vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
+        trans_pose = self.transform_pose(vertical_printing_idle_pose, "buildplate", "base")
         trans_pose.pose = round_pose_values(trans_pose.pose)
         success = self.pose_go(trans_pose.pose)
         print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
         print("\n")
 
+        #############################################################################################################
+        # Pose movement using transform
+        #############################################################################################################
 
-        ########################################################################################
-        # # TODO: Refactor trac_IK properly
-        # # TODO: Figure out how to pass in the base_link and tip_link without hardcoding them
-        # ik_solver = test_IK.IK(base_link="widowx_1_arm_base_link", tip_link="widowx_1_wrist_1_link")
-        # print(ik_solver.joint_names)
-        # lb, ub = ik_solver.get_joint_limits()
-        # print(lb, ub)
-        # seed = self.move_group.get_current_joint_values()  # Current joint values   # [0.245001, -2e-06, 0.176511, -0.011142, 0.691669, 0.011631, 0.722035]  # Current values of pose
-        # print(f"get joint type is {type(seed)}")
-        #
-        # # vertical_printing_idle_pose = list_to_pose([0.005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
-        # #                                             0.000000])
-        # # target_pose = self.transform_pose(vertical_printing_idle_pose, "widowx_1_wrist_1_link" , "buildplate")
-        # target_pose = list_to_pose([0.100000, 0.00000111, 0.10000111, 0.000000, 1.000000, 0.000000,
-        #                             0.000000])
-        # #target_pose.pose = round_pose_values(target_pose.pose)
-        # target_pose = round_pose_values(target_pose)
-        #
-        # # sol = ik_solver.get_ik(seed, target_pose.pose.position.x, target_pose.pose.position.y,
-        # #                        target_pose.pose.position.z, target_pose.pose.orientation.x,
-        # #                        target_pose.pose.orientation.y, target_pose.pose.orientation.z,
-        # #                        target_pose.pose.orientation.w)
-        #
-        # sol = ik_solver.get_ik(seed, target_pose.position.x, target_pose.position.y,
-        #                        target_pose.position.z, target_pose.orientation.x,
-        #                        target_pose.orientation.y, target_pose.orientation.z,
-        #                        target_pose.orientation.w)
-        #
-        # print(f"Solution is {sol}")
-        #
-        # success = self.joint_go(sol, wait=True)
+        #############################################################################################################
+        # Cartesian pose movement in y-axis using transform
+        #############################################################################################################
 
-
-
-
-        # q = quaternion_from_euler(-pi, 0, -pi + pi / 4)
-        # sol = ik_solver.get_ik(seed, 0.100000, 0.100000, 0.100000, q[0], q[1], q[2],
-        #                        q[3])
-
-        # sol = ik_solver.get_ik(seed, 0.100000, 0.00000, 0.100000, 0, 1, 0, 0)
-        #
-        # print("\n")
-        # print("=====================================================")
-        # print(sol)
-        # print("=====================================================")
-        # print("\n")
-        # print(f"=== Successfully executed movement by manually call the IK solver: {success} ===")
-        # print("\n")
-        ########################################################################################
+        print("=====================================================")
+        print(f"================  Cartesian pose movement in y-axis using transform test ==================")
+        print(f"=== Attempting pose movement using the buildplate frame of reference ===")
 
         # Go to the middle of the print bed in XY
-        pose = list_to_pose_stamped([-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-        #trans_pose = self.transform_pose(pose, "world", "widowx_1_arm_base_link")
-        #trans_pose = self.transform_pose(vertical_printing_idle_pose, "base", "widowx_1_arm_base_link")
-        trans_pose = round_pose_values(pose)
-        plan = self.cartesian_go(pose)
-        print(type(plan))
-        print(plan)
 
-        # print(f"=== Executed cartesian movement following {followed_percentage} % of requested trajectory ===")
-        # print("\n")
+        # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000],
+        #                                    "buildplate")
 
-        # # Go to the edge of the print bed in Y
-        # pose.pose.position.y = 0.3
-        # trans_pose = self.transform_pose(pose, "buildplate", "base")
-        # trans_pose = round_pose_values(trans_pose)
-        # success = self.cartesian_go(trans_pose)
+        pose_target = list_to_pose_stamped([-0.1, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
+
+        if round(pose_target.pose.position.y, 6) != 0.0:
+            pose_target = self.pose_for_linear_y_movement(pose_target, "base")
+        pose_target.pose = round_pose_values(pose_target.pose)
+        success = self.cartesian_go(pose_target)
+        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
+        print("\n")
+
+        # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.200000, 0.000000, 1.000000, 0.000000, 0.000000],
+        #                                    "buildplate")
+
+        pose_target = list_to_pose_stamped([-0.1, 0.1, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
+        if round(pose_target.pose.position.y, 6) != 0.0:
+            pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
+        pose_target.pose = round_pose_values(pose_target.pose)
+        success = self.cartesian_go(pose_target)
+        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
+        print("\n")
+
+        #############################################################################################################
+        # Cartesian pose movement in y-axis using transform
+        #############################################################################################################
 
         # # Do a series of cartesian movements
         # # Do zigzags across the whole printbed between x=0 and x=l/2 where l is the length of the printbed in x

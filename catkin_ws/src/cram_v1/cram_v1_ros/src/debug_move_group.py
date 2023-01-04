@@ -203,6 +203,11 @@ class MoveitInterface:
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
         # Note: We are just planning, not asking move_group to actually move the robot yet:
+        display_trajectory = DisplayTrajectory()
+        display_trajectory.trajectory_start = self.robot.get_current_state()
+        display_trajectory.trajectory.append(plan)
+        self.display_trajectory_publisher.publish(display_trajectory)
+
 
         # Executing a Plan
         self.move_group.execute(plan, wait)
@@ -274,8 +279,8 @@ class MoveitInterface:
         trans_pose = self.transform_pose(pose, "world", "base")
         trans_pose = round_pose_values(trans_pose)
         plan = self.cartesian_go(trans_pose)
-        print(type(plan))
-        print(plan)
+        #print(type(plan))
+        #print(plan)
 
 
 if __name__ == "__main__":
