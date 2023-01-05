@@ -282,11 +282,11 @@ Visualization Manager:
         widowx_1_forearm_link:
           Value: false
         widowx_1_hotend:
-          Value: false
+          Value: true
         widowx_1_shoulder_link:
           Value: false
         widowx_1_wrist_1_link:
-          Value: true
+          Value: false
         widowx_2_arm_base_link:
           Value: false
         widowx_2_biceps_link:
@@ -361,9 +361,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6047981977462769
+      Pitch: 0.5097981095314026
       Target Frame: base
-      Yaw: 4.183505058288574
+      Yaw: 4.733506202697754
     Saved: ~
 Window Geometry:
   Displays:

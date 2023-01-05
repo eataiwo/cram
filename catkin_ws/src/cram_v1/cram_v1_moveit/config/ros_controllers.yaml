@@ -5,6 +5,7 @@ widowx_1_arm_hotend_controller:
     - widowx_1_joint_2
     - widowx_1_joint_3
     - widowx_1_joint_4
+    - widowx_1_hotend_joint
   gains:
     widowx_1_joint_1:
       p: 100
@@ -26,6 +27,11 @@ widowx_1_arm_hotend_controller:
       d: 1
       i: 1
       i_clamp: 1
+    widowx_1_hotend_joint:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
 widowx_arm_2_hotend_controller:
   type: effort_controllers/JointTrajectoryController
   joints:
@@ -33,6 +39,7 @@ widowx_arm_2_hotend_controller:
     - widowx_2_joint_2
     - widowx_2_joint_3
     - widowx_2_joint_4
+    - widowx_2_hotend_joint
   gains:
     widowx_2_joint_1:
       p: 100
@@ -50,6 +57,11 @@ widowx_arm_2_hotend_controller:
       i: 1
       i_clamp: 1
     widowx_2_joint_4:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    widowx_2_hotend_joint:
       p: 100
       d: 1
       i: 1

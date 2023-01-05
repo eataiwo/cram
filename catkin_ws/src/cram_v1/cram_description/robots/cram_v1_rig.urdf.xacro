@@ -57,7 +57,7 @@
 
 	<!-- widowx arm with hotend -->
 	<xacro:widowx_arm arm_id="$(arg arm_id_1)" connected_to="base"  xyz="-0.245 0  0.04" rpy=" 0 0 0 "/>
-	<xacro:hotend ns="$(arg arm_id_1)"  connected_to="$(arg arm_id_1)_wrist_1_link" xyz="0 0 ${M_SCALE*36.5}" rpy="0 0 ${-M_PI/4}" />
+	<xacro:hotend ns="$(arg arm_id_1)"  connected_to="$(arg arm_id_1)_wrist_1_link" xyz="0 0 ${M_SCALE*36.5}" rpy="0 0 0" />
 
 
 	<!-- widowxl arm with hotend -->

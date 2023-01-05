@@ -8,51 +8,53 @@ default_acceleration_scaling_factor: 0.1
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
-  widowx_1_joint_1:
-    has_position_limits: true
-    max_position: 7.0
-    has_velocity_limits: true
-    max_velocity: 7.016
-    has_acceleration_limits: true
-    max_acceleration: 10
-  widowx_1_joint_2:
-    has_position_limits: true
-    max_position: 7.0
-    has_velocity_limits: true
-    max_velocity: 5.76
-    has_acceleration_limits: true
-    max_acceleration: 10
-  widowx_1_joint_3:
-    has_position_limits: true
-    max_position: 7.0
-    has_velocity_limits: true
-    max_velocity: 5.76
-    has_acceleration_limits: true
-    max_acceleration: 10
-  widowx_1_joint_4:
-    has_position_limits: true
-    max_position: 7.0
+  widowx_1_hotend_joint:
     has_velocity_limits: true
     max_velocity: 8.167999999999999
-    has_acceleration_limits: true
-    max_acceleration: 10
+    has_acceleration_limits: false
+    max_acceleration: 0
+  widowx_1_joint_1:
+    has_velocity_limits: true
+    max_velocity: 7.016
+    has_acceleration_limits: false
+    max_acceleration: 0
+  widowx_1_joint_2:
+    has_velocity_limits: true
+    max_velocity: 5.76
+    has_acceleration_limits: false
+    max_acceleration: 0
+  widowx_1_joint_3:
+    has_velocity_limits: true
+    max_velocity: 5.76
+    has_acceleration_limits: false
+    max_acceleration: 0
+  widowx_1_joint_4:
+    has_velocity_limits: true
+    max_velocity: 8.167999999999999
+    has_acceleration_limits: false
+    max_acceleration: 0
+  widowx_2_hotend_joint:
+    has_velocity_limits: true
+    max_velocity: 8.167999999999999
+    has_acceleration_limits: false
+    max_acceleration: 0
   widowx_2_joint_1:
     has_velocity_limits: true
     max_velocity: 7.016
-    has_acceleration_limits: true
-    max_acceleration: 10
+    has_acceleration_limits: false
+    max_acceleration: 0
   widowx_2_joint_2:
     has_velocity_limits: true
     max_velocity: 5.76
-    has_acceleration_limits: true
-    max_acceleration: 10
+    has_acceleration_limits: false
+    max_acceleration: 0
   widowx_2_joint_3:
     has_velocity_limits: true
     max_velocity: 5.76
-    has_acceleration_limits: true
-    max_acceleration: 10
+    has_acceleration_limits: false
+    max_acceleration: 0
   widowx_2_joint_4:
     has_velocity_limits: true
     max_velocity: 8.167999999999999
     has_acceleration_limits: false
-    max_acceleration: 10
+    max_acceleration: 0

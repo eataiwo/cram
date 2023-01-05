@@ -8,6 +8,7 @@ controller_list:
       - widowx_1_joint_2
       - widowx_1_joint_3
       - widowx_1_joint_4
+      - widowx_1_hotend_joint
   - name: widowx_arm_2_hotend_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
@@ -17,3 +18,4 @@ controller_list:
       - widowx_2_joint_2
       - widowx_2_joint_3
       - widowx_2_joint_4
+      - widowx_2_hotend_joint

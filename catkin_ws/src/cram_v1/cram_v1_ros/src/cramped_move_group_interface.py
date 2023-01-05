@@ -64,9 +64,9 @@ class MoveitInterface:
 
         # Common joint states for a 4DOF arm
         # TODO: Check if this will work if I make them tuples as I do not want these to be overwritten once the program starts running.
-        self.print_idle_vertical = [0, 0.46, 1.08913, -0.05522]  # Joint space
-        self.print_idle_horizontal = [0, 0.925, 0.81301, -1.7303]  # Joint space
-        self.arm_home = (0, -pi / 2, pi / 2, 0)  # Joint space
+        self.print_idle_vertical = [0, 0.46, 1.08913, -0.05522, 0]  # Joint space
+        self.print_idle_horizontal = [0, 0.925, 0.81301, -1.7303, 0]  # Joint space
+        self.arm_home = (0, -pi / 2, pi / 2, 0, 0)  # Joint space
         self.robot_arm_base_frame = "widowx_1_arm_base_link"
         self.common_poses = {"widowx1_print_home": [],
                              "widowx1_print_idle_vertical": list_to_pose_stamped(
@@ -444,7 +444,7 @@ class MoveitInterface:
         print(f"=== Attempting move to vertical printing idle position ===")
 
         # In base/world frame
-        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
+        vertical_printing_idle = [0.150000 - 0.245, 0.000000, 0.150000 + 0.04, 0.000000, 1.000000, 0.000000,
                                   0.000000]  # = [-0.145, 0, 0.14, 0, 1, 0, 0]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
