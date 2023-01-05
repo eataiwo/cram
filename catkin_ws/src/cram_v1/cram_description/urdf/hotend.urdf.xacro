@@ -3,24 +3,27 @@
  widowx xacro from https://github.com/RobotnikAutomation/widowx_arm -->
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hotend">
-  <xacro:macro name="hotend" params="connected_to:='' ns:='' rpy:='0 0 0' xyz:='0 0 0' description_pkg:='cram_description' ">
+  <xacro:macro name="hotend" params="connected_to:='' ns:='' rpy:='' xyz:='' description_pkg:='cram_description' ">
     <xacro:unless value="${connected_to == ''}">
-      <joint name="${ns}_hotend_joint" type="fixed">
+      <joint name="${ns}_hotend_joint" type="revolute">
+<!--        <origin xyz="0 0 ${M_SCALE*71.5}" rpy="0 0 0" />-->
         <parent link="${connected_to}"/>
         <child link="${ns}_hotend"/>
+        <axis xyz="0 0 1" />
+        <limit lower="-2.617" upper="2.617" effort="0" velocity="1.571" />
         <origin xyz="${xyz}" rpy="${rpy}"/>
       </joint>
     </xacro:unless>
     <link name="${ns}_hotend">
          <visual>
-            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <origin xyz="${xyz}" rpy="${rpy}"/>
             <geometry>
                <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/hotend/dragon_hotend.stl"/>
             </geometry>
             <xacro:material_red />
          </visual>
          <collision>
-            <origin xyz="0 0 ${M_SCALE*37}" rpy="0 0 -0.7854" />
+            <origin xyz="${xyz}" rpy="${rpy}" />
             <geometry>
                <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/hotend/dragon_hotend.stl"/>
             </geometry>
@@ -33,3 +36,10 @@
       </link>
   </xacro:macro>
 </robot>
+
+<!--      <joint name="${prefix}joint_5" type="revolute">-->
+<!--         <origin xyz="0 0 ${M_SCALE*71.5}" rpy="0 0 0" />-->
+<!--         <parent link="${prefix}wrist_1_link" />-->
+<!--         <child link="${prefix}wrist_2_link" />-->
+<!--         <axis xyz="0 0 1" />-->
+<!--         <limit lower="-2.617" upper="2.617" effort="0" velocity="1.571" />-->

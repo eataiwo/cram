@@ -101,16 +101,16 @@
       </link>
       <link name="${arm_id}_wrist_1_link">
          <visual>
-            <origin xyz="0 0 0" rpy="-1.5707 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 -3.141" />-->
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowxl/wrist_bracket.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/wrist_1_link.stl"/>
             </geometry>
             <xacro:material_black />
          </visual>
          <collision>
-            <origin xyz="0 0 0" rpy="-1.5707 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 -3.141" />
             <geometry>
-               <mesh scale="0.001 0.001 0.001" filename="package://${description_pkg}/meshes/widowxl/wrist_bracket.stl"/>
+               <mesh filename="package://${description_pkg}/meshes/widowx/wrist_1_link.stl"/>
             </geometry>
          </collision>
          <inertial>
