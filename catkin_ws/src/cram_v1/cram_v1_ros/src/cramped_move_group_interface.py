@@ -70,10 +70,10 @@ class MoveitInterface:
         self.arm_home = (0, -pi / 2, pi / 2, 0, 0)  # Joint space
         self.robot_arm_base_frame = "widowx_1_arm_base_link"
         self.common_poses = {"widowx1_print_home": [],
-                             "widowx1_print_idle_vertical": list_to_pose_stamped(
-                                 [-0.10, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base"),
+                             "widowx1_print_idle_vertical": list_to_pose(
+                                 [0.05, 0.15, 0.01, 0.000000, 1.000000, 0.000000, 0.000000]),
                              "widowx2_print_home": [],
-                             }
+                             } #In buildplate frame of reference
 
         # Initialise a RobotCommander object. Provides information such as
         # the robot’s kinematic model and the robot’s current joint states
@@ -317,10 +317,10 @@ class MoveitInterface:
         elif type(goal) is Pose:
             waypoints.append(copy.deepcopy(goal))
 
-        print("=====================================================")
-        print(f"=== Waypoints {waypoints} ===")
-        print("=====================================================")
-        print("\n")
+        # print("=====================================================")
+        # print(f"=== Waypoints {waypoints} ===")
+        # print("=====================================================")
+        # print("\n")
 
         # We want the Cartesian path to be interpolated at a resolution of 0.1 mm
         # which is why we will specify 0.0001 as the eef_step in Cartesian translation.
@@ -329,26 +329,15 @@ class MoveitInterface:
         (plan, fraction) = self.move_group.compute_cartesian_path(
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
-        # Publish the plan as a trajectory
-        # display_trajectory = DisplayTrajectory()
-        # display_trajectory.trajectory_start = self.robot.get_current_state()
-        # display_trajectory.trajectory.append(plan)
-        # self.display_trajectory_publisher.publish(display_trajectory)
-        # print("\n")
-        # print(f"display trajectory = \n {display_trajectory}")
-        # print("\n")
-
-        # Note: We are just planning, not asking move_group to actually move the robot yet:
-
         # TODO: Add a roslog info message here confirming the movement and the end and start pose if verbose set to true actually do something similar for all movements and reference the namespace too
 
         success = self.move_group.execute(plan, wait)
-        # self.move_group.stop()
-        # self.move_group.clear_pose_targets()
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
 
         return success
 
-    def go_home(self, pose="widowx1_print_idle_vertical"):
+    def go_home(self, pose="widowx1_print_idle_vertical", wait=True):
         '''
         Special movement for returning to common poses. For example and pose for an idle state.
         This movement assumes printing could be happening when called therefore the movement will have a specific order
@@ -371,45 +360,30 @@ class MoveitInterface:
         # Clear the print bed or work piece by 30mm
         wpose.position.z = wpose.position.z + 0.03
         waypoints.append(copy.deepcopy(wpose))
-        # success = self.cartesian_go(wpose, wait=True)
-        # successes.append(success)
 
         # Get the target pose from the common pose dictionary a class attribute
         target_pose = self.common_poses[pose]
+        target_pose = self.transform_pose(target_pose, "hotend_tip", "widowx_1_hotend")
+        target_pose = self.transform_pose(target_pose, "buildplate", "base")
 
         # Go to target xy co-ordinates
-        wpose.position.x = target_pose.position.x
-        wpose.position.y = target_pose.position.y
+        wpose.position.x = target_pose.pose.position.x
+        wpose.position.y = target_pose.pose.position.y
+
         waypoints.append(copy.deepcopy(wpose))
-        # success = self.cartesian_go(wpose, wait=True)
-        # successes.append(success)
 
         # Finally go to target z-position
-        wpose.position.z = target_pose.position.z
+        wpose.position.z = target_pose.pose.position.z
         waypoints.append(copy.deepcopy(wpose))
-        # success = self.cartesian_go(wpose, wait=True)
-        # successes.append(success)
-
-        # if all(successes):
-        #     return True
-        # else:
-        #     return False
 
         (plan, fraction) = self.move_group.compute_cartesian_path(
             waypoints, self.eef_step, self.jump_threshold)  # waypoints to follow  # eef_step # jump_threshold
 
-        # Publish the plan as a trajectory
-        display_trajectory = DisplayTrajectory()
-        display_trajectory.trajectory_start = self.robot.get_current_state()
-        display_trajectory.trajectory.append(plan)
-        self.display_trajectory_publisher.publish(display_trajectory)
-        # Note: We are just planning, not asking move_group to actually move the robot yet:
-
-        self.move_group.execute(plan, wait=True)
+        success = self.move_group.execute(plan, wait)
         self.move_group.stop()
         self.move_group.clear_pose_targets()
 
-        return fraction
+        return success
 
     def run_demo(self):
         """
@@ -460,25 +434,27 @@ class MoveitInterface:
         #############################################################################################################
         # Relative pose movement
         #############################################################################################################
-        # Do a relative pose movement in x-axis
         print("=====================================================")
         print(f"================ Relative pose movement test ==================")
         print(f"=== Attempting a relative move in the x-axis of +0.1m ===")
 
+        # Do a relative pose movement in X-axis
         success = self.relative_pose_go(0, 0.10, wait=True)
+        print("=====================================================")
         print(f"=== Successfully executed relative movement in x-axis: {success} ===")
         print("\n")
 
-        # In Z axis
+        # In Z-axis
         print(f"=== Attempting a relative move in the z-axis of +0.05m ===")
         success = self.relative_pose_go(2, 0.05, wait=True)
+        print("=====================================================")
         print(f"=== Successfully executed relative movement in z-axis: {success} ===")
         print("\n")
 
-        # In Y axis - This will not work as the quaternion for the widowx also needs to be calculated which this
-        # function lacks
+        # In Y-axis
         print(f"=== Attempting a relative move in the y-axis of +0.1m ===")
         success = self.relative_pose_go(1, 0.1, wait=True)
+        print("=====================================================")
         print(f"=== Successfully executed relative movement in y-axis: {success} ===")
         print("\n")
 
@@ -487,117 +463,131 @@ class MoveitInterface:
         #############################################################################################################
 
         #############################################################################################################
-        # Pose movement using transform
+        # Pose movement using transforms
         #############################################################################################################
         # Transform required. The final frame required for planner is the base frame, if we want to write commands
         # relative to the buildplate from of reference they need to be the transformed back into the base frame
         # which can then be sent to the planner
         print("=====================================================")
-        print(f"================ Pose movement using a transform test ==================")
+        print(f"================ Pose movement using a transforms test ==================")
         print(f"=== Attempting pose movement using the build plate frame of reference ===")
 
         # Same point as vertical_print_idle in pose_movement defined above but in buildplate frame
-        vertical_printing_idle = [0.1000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+        # TODO: Change name of below pose
+        vertical_printing_idle = [0.000000, 0.000000, 0.005000, 0.000000, 1.000000, 0.000000,
                                   0.000000]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
-        trans_pose = self.transform_pose(vertical_printing_idle_pose, "buildplate", "base")
+        trans_pose = self.transform_pose(vertical_printing_idle_pose, "hotend_tip", "widowx_1_hotend")
+        # print(f" The transform from hotend_tip to widowx_1_hotend is = \n {trans_pose}")
+        trans_pose = self.transform_pose(trans_pose, "buildplate", "base")
+        # print(f" The transform from buildplate to base is = \n {trans_pose}")
+
         trans_pose.pose = round_pose_values(trans_pose.pose)
         success = self.pose_go(trans_pose.pose)
+
+        print("=====================================================")
         print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
         print("\n")
 
-        #############################################################################################################
-        # Pose movement using transform
-        #############################################################################################################
+        ############################################################################################################
+        # Pose movement using transforms
+        ############################################################################################################
 
         #############################################################################################################
-        # Cartesian pose movement in y-axis using transform
+        # Cartesian pose movement using transforms
         #############################################################################################################
 
         print("=====================================================")
-        print(f"================  Cartesian pose movement in y-axis using transform test ==================")
+        print(f"================  Cartesian pose movement ==================")
         print(f"=== Attempting pose movement using the buildplate frame of reference ===")
 
-        # Go to the middle of the print bed in XY
+        pose_target = list_to_pose([0.15, 0.3, 0.005, 0.000000, 1.000000, 0.000000, 0.000000])
 
-        # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000],
-        #                                    "buildplate")
+        trans_pose = self.transform_pose(pose_target, "hotend_tip", "widowx_1_hotend")
+        trans_pose = self.transform_pose(trans_pose, "buildplate", "base")
 
-        pose_target = list_to_pose_stamped([-0.1, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-
-        # if round(pose_target.pose.position.y, 6) != 0.0:
-        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
-        pose_target.pose = round_pose_values(pose_target.pose)
+        pose_target = round_pose_values(trans_pose)
         success = self.cartesian_go(pose_target)
-        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
-        print("\n")
 
-        pose_target = list_to_pose_stamped([-0.0, 0.0, 0.1, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-
-        # if round(pose_target.pose.position.y, 6) != 0.0:
-        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
-        pose_target.pose = round_pose_values(pose_target.pose)
-        success = self.cartesian_go(pose_target)
-        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
-        print("\n")
-
-        pose_target = list_to_pose_stamped([-0.145, 0, 0.14, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-
-        # if round(pose_target.pose.position.y, 6) != 0.0:
-        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
-        pose_target.pose = round_pose_values(pose_target.pose)
-        success = self.cartesian_go(pose_target)
-        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
-        print("\n")
-
-        # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.200000, 0.000000, 1.000000, 0.000000, 0.000000],
-        #                                    "buildplate")
-        pose_target = list_to_pose_stamped([-0.1, 0.1, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-        # if round(pose_target.pose.position.y, 6) != 0.0:
-        #     pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
-        pose_target.pose = round_pose_values(pose_target.pose)
-        success = self.cartesian_go(pose_target)
+        print("=====================================================")
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
         print("\n")
 
         #############################################################################################################
-        # Cartesian pose movement in y-axis using transform
+        # Cartesian pose movement using transforms
         #############################################################################################################
 
-        # # Do a series of cartesian movements
-        # # Do zigzags across the whole printbed between x=0 and x=l/2 where l is the length of the printbed in x
-        # x_spacing = 0.15
-        # y_spacing = 0.06
-        # build_plate_width = 0.3
-        # n = (build_plate_width / y_spacing) + 1
-        # successes = []
-        # for i in range(floor(n)):
-        #     pose.pose.position.x = pose.pose.position.x - x_spacing
-        #     trans_pose = self.transform_pose(pose, "buildplate", "base")
-        #     trans_pose = round_pose_values(trans_pose)
-        #     success = self.cartesian_go(trans_pose)
-        #     successes.append(success)
-        #
-        #     pose.pose.position.y = pose.pose.position.y
-        #     trans_pose = self.transform_pose(pose, "buildplate", "base")
-        #     trans_pose = round_pose_values(trans_pose)
-        #     success = self.cartesian_go(trans_pose)
-        #     successes
-        #
-        #     x_spacing = -x_spacing
-        # if all(successes):
-        #     print(f"=== Successfully executed cartesian zigzag movement over build plate: {success} ===")
-        #     print("\n")
+        #############################################################################################################
+        # Series of cartesian moves
+        #############################################################################################################
 
-        # Go home
-        # success = self.go_home("widowx1")
-        # print(f"=== Successfully gone to vertical printing home position: {success} ===")
-        # print("\n")
-        #
-        # # Return to robot arm home
-        # success = self.joint_go(robot_arm_home, wait=True)
-        # print(f"=== Successfully gone to robot home: {success} ===")
-        # print("\n")
+        print("=====================================================")
+        print(f"================  Series of cartesian moves ==================")
+        print(f"=== Attempting a zigzag of cartesian moves ===")
+
+        # Do a series of cartesian movements
+        # Do zigzags across the whole printbed between x=0 and x=l/2 where l is the length of the printbed in x
+        x_spacing = 0.15
+        y_spacing = 0.06
+        build_plate_width = 0.3
+        n = (build_plate_width / y_spacing) + 1
+        successes = []
+        pose = self.move_group.get_current_pose()
+        for i in range(floor(n)):
+            # TODO: Print all poses generated and check it follows the zig zag I expect
+            pose.pose.position.x = pose.pose.position.x - x_spacing
+            trans_pose = round_pose_values(pose)
+            success = self.cartesian_go(trans_pose, wait=True)
+            successes.append(success)
+
+            pose.pose.position.y = pose.pose.position.y - y_spacing
+            trans_pose = round_pose_values(pose)
+            success = self.cartesian_go(trans_pose, wait=True)
+            successes.append(success)
+
+            x_spacing = -x_spacing
+        if all(successes):
+            print(f"=== Successfully executed cartesian zigzag movement over build plate: {success} ===")
+            print("\n")
+
+        #############################################################################################################
+        # Series of cartesian moves
+        #############################################################################################################
+
+
+        #############################################################################################################
+        # Pause print and go to idle position
+        #############################################################################################################
+        print("=====================================================")
+        print(f"================ Pause print and go to idle position ==================")
+        print(f"=== Attempting move to idle position ===")
+
+        success = self.go_home("widowx1_print_idle_vertical")
+
+        print("=====================================================")
+        print(f"=== Successfully gone to vertical printing home position: {success} ===")
+        print("\n")
+        #############################################################################################################
+        # Pause print and go to idle position
+        #############################################################################################################
+
+
+
+        #############################################################################################################
+        # Return home
+        #############################################################################################################
+        print("==================-==================================")
+        print(f"================ Return Home ==================")
+        print(f"=== Attempting move to robot home ===")
+
+        success = self.joint_go(self.arm_home, wait=True)
+
+        print("=====================================================")
+        print(f"=== Successfully gone to robot home: {success} ===")
+        print("\n")
+        #############################################################################################################
+        # Return home
+        #############################################################################################################
 
 
 if __name__ == "__main__":
