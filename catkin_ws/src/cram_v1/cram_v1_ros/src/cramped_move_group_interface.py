@@ -61,6 +61,7 @@ class MoveitInterface:
         self.jump_threshold = 0.0
         # TODO: Will revisit the number once I have tested the the workspace reachability and reliability and know what failure rate I can tolerate
         self.planning_attempts = 5
+        self.start_state = start_state
 
         # Common joint states for a 4DOF arm
         # TODO: Check if this will work if I make them tuples as I do not want these to be overwritten once the program starts running.
@@ -98,13 +99,6 @@ class MoveitInterface:
         self.display_trajectory_publisher = rospy.Publisher("/move_group/display_planned_path",
                                                             DisplayTrajectory,
                                                             queue_size=20)
-
-        # Move robot arm to start state
-        if start_state is None:
-            start_state = self.arm_home  # [0, -pi / 2, pi / 2, 0]
-        self.joint_go(start_state, wait=True)
-        # TODO: Add roslog into that robot arm (use namespace) has gone home and if it was successful move.
-
         # Print additional information if verbose set to true.
         if verbose:
             # Get the name of the reference frame for this robot:
@@ -141,21 +135,28 @@ class MoveitInterface:
         """
         Modify the default parameters for moveit
         """
-
         self.move_group.set_max_velocity_scaling_factor = max_velocity_scaling_factor
         self.move_group.set_max_acceleration_scaling_factor = max_acceleration_scaling_factor
         self.move_group.set_num_planning_attempts(set_num_planning_attempts)
         self.move_group.set_planning_time(set_planning_time)
         self.move_group.set_workspace(workspace)
+        # self.move_group.set_pose_reference_frame("hotend_tip")
         # self.move_group.set_goal_position_tolerance(0.1)
         # self.move_group.set_goal_orientation_tolerance(0.1)
         # self.move_group.set_goal_tolerance(0.1)
         # self.move_group.set_goal_joint_tolerance(0.1)
-        # self.move_group.set_pose_reference_frame("base")
         # self.move_group.set_planner_id("RRTConnectkConfigDefault")
+
+        # Move robot arm to start state
+        if self.start_state is None:
+            self.start_state = self.arm_home  # [0, -pi / 2, pi / 2, 0]
+        self.joint_go(self.start_state, wait=True)
+        # TODO: Add roslog into that robot arm (use namespace) has gone home and if it was successful move.
+
 
     def pose_for_linear_y_movement(self, pose_target, from_frame="buildplate", pose_start=None):
         """
+        DEPRECATED: Just waiting to finalise class before deleting
         Calculating new pose required for linear movement in the y-axis
         """
         # Require a PoseStamped msg. Check is Pose msg, if so convert to PoseStamped msg
@@ -444,7 +445,7 @@ class MoveitInterface:
         print(f"=== Attempting move to vertical printing idle position ===")
 
         # In base/world frame
-        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
+        vertical_printing_idle = [0.150000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
                                   0.000000]  # = [-0.145, 0, 0.14, 0, 1, 0, 0]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
@@ -480,6 +481,7 @@ class MoveitInterface:
         success = self.relative_pose_go(1, 0.1, wait=True)
         print(f"=== Successfully executed relative movement in y-axis: {success} ===")
         print("\n")
+
         #############################################################################################################
         # Relative Pose movement
         #############################################################################################################
@@ -495,63 +497,7 @@ class MoveitInterface:
         print(f"=== Attempting pose movement using the build plate frame of reference ===")
 
         # Same point as vertical_print_idle in pose_movement defined above but in buildplate frame
-        vertical_printing_idle = [0.0005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
-                                  0.000000]
-        vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
-        trans_pose = self.transform_pose(vertical_printing_idle_pose, "buildplate", "base")
-        trans_pose.pose = round_pose_values(trans_pose.pose)
-        success = self.pose_go(trans_pose.pose)
-        print(f"=== Successfully gone to vertical printing idle position using the buildplate transform: {success} ===")
-        print("\n")
-
-        #############################################################################################################
-        # Pose movement using transform
-        #############################################################################################################
-
-        #############################################################################################################
-        # Pose movement in y-axis using transform
-        #############################################################################################################
-
-        # Due to hardware limitations anytime a movement is done the quaternion will also change and this has to be
-        # worked out.
-        print("=====================================================")
-        print(f"================ Pose movement using a transform in y-axis test ==================")
-        print(f"=== Attempting pose movement using the widowx_1_arm_base_link frame of reference in y-axis ===")
-        pose_target = PoseStamped()
-        pose_target.pose = list_to_pose([0.100000, 0.100000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000])
-        if round(pose_target.pose.position.y, 6) != 0.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "widowx_1_arm_base_link")
-        pose_target.pose = round_pose_values(pose_target.pose)
-        success = self.pose_go(pose_target.pose)
-        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
-        print("\n")
-
-        print(f"=== Attempting pose movement using the buildplate frame of reference in y-axis ===")
-        pose_target = PoseStamped()
-        pose_target.pose = list_to_pose([0.100000, 0.100000, 0.100000, 0.000000, 1.000000, 0.000000, 0.000000])
-        if round(pose_target.pose.position.y, 6) != 15.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
-        pose_target.pose = round_pose_values(pose_target.pose)
-        success = self.pose_go(pose_target.pose)
-        print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
-        print("\n")
-
-        #############################################################################################################
-        # Pose movement in y-axis using transform
-        #############################################################################################################
-
-        #############################################################################################################
-        # Pose movement using transform
-        #############################################################################################################
-        # Transform required. The final frame required for planner is the base frame, if we want to write commands
-        # relative to the buildplate from of reference they need to be the transformed back into the base frame
-        # which can then be sent to the planner
-        print("=====================================================")
-        print(f"================ Pose movement using a transform test ==================")
-        print(f"=== Attempting pose movement using the build plate frame of reference ===")
-
-        # Same point as vertical_print_idle in pose_movement defined above but in buildplate frame
-        vertical_printing_idle = [0.0005000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
+        vertical_printing_idle = [0.1000, 0.150000, 0.100000, 0.000000, 1.000000, 0.000000,
                                   0.000000]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         trans_pose = self.transform_pose(vertical_printing_idle_pose, "buildplate", "base")
@@ -579,8 +525,8 @@ class MoveitInterface:
 
         pose_target = list_to_pose_stamped([-0.1, 0.0, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
 
-        if round(pose_target.pose.position.y, 6) != 0.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "base")
+        # if round(pose_target.pose.position.y, 6) != 0.0:
+        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
         pose_target.pose = round_pose_values(pose_target.pose)
         success = self.cartesian_go(pose_target)
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
@@ -588,8 +534,8 @@ class MoveitInterface:
 
         pose_target = list_to_pose_stamped([-0.0, 0.0, 0.1, 0.000000, 1.000000, 0.000000, 0.000000], "base")
 
-        if round(pose_target.pose.position.y, 6) != 0.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "base")
+        # if round(pose_target.pose.position.y, 6) != 0.0:
+        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
         pose_target.pose = round_pose_values(pose_target.pose)
         success = self.cartesian_go(pose_target)
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
@@ -597,8 +543,8 @@ class MoveitInterface:
 
         pose_target = list_to_pose_stamped([-0.145, 0, 0.14, 0.000000, 1.000000, 0.000000, 0.000000], "base")
 
-        if round(pose_target.pose.position.y, 6) != 0.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "base")
+        # if round(pose_target.pose.position.y, 6) != 0.0:
+        #     pose_target = self.pose_for_linear_y_movement(pose_target, "base")
         pose_target.pose = round_pose_values(pose_target.pose)
         success = self.cartesian_go(pose_target)
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
@@ -607,8 +553,8 @@ class MoveitInterface:
         # pose_target = list_to_pose_stamped([0.005000, 0.250000, 0.200000, 0.000000, 1.000000, 0.000000, 0.000000],
         #                                    "buildplate")
         pose_target = list_to_pose_stamped([-0.1, 0.1, 0.2, 0.000000, 1.000000, 0.000000, 0.000000], "base")
-        if round(pose_target.pose.position.y, 6) != 0.0:
-            pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
+        # if round(pose_target.pose.position.y, 6) != 0.0:
+        #     pose_target = self.pose_for_linear_y_movement(pose_target, "buildplate")
         pose_target.pose = round_pose_values(pose_target.pose)
         success = self.cartesian_go(pose_target)
         print(f"=== Successful pose movement using a transform in y-axis: {success} ===")
