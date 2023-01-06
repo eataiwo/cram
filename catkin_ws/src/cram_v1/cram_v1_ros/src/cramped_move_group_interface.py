@@ -444,7 +444,7 @@ class MoveitInterface:
         print(f"=== Attempting move to vertical printing idle position ===")
 
         # In base/world frame
-        vertical_printing_idle = [0.150000 - 0.245, 0.000000, 0.150000 + 0.04, 0.000000, 1.000000, 0.000000,
+        vertical_printing_idle = [0.100000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
                                   0.000000]  # = [-0.145, 0, 0.14, 0, 1, 0, 0]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
