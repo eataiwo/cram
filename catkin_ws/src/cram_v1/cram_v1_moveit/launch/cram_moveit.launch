@@ -95,4 +95,6 @@
     <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
   </include>
 
+  <node pkg="tf2_ros" type="static_transform_publisher" name="endeffector_tf_brodcaster" args="0 0 0.08 0 0 0 1 widowx_1_hotend hotend_tip" />
+
 </launch>
