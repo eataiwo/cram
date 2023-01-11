@@ -13,7 +13,7 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion, qua
 from math import pi, atan, tau, dist, fabs, cos, floor
 from geometry_msgs.msg import Pose, PoseStamped
 from moveit_commander.conversions import pose_to_list, list_to_pose, list_to_pose_stamped
-
+from get_fk import GetFK
 
 # from std_msgs.msg import String
 
@@ -420,7 +420,7 @@ class MoveitInterface:
 
         # In base/world frame
         vertical_printing_idle = [0.150000 - 0.245, 0.000000, 0.100000 + 0.04, 0.000000, 1.000000, 0.000000,
-                                  0.000000]  # = [-0.145, 0, 0.14, 0, 1, 0, 0]
+                                  0.000000]  # = [-0.095, 0, 0.14, 0, 1, 0, 0]
         vertical_printing_idle_pose = list_to_pose(vertical_printing_idle)
         success = self.pose_go(vertical_printing_idle_pose)
 
